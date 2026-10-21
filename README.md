@@ -129,7 +129,7 @@ cd site
 ..\.venv\Scripts\python.exe serve.py --port 8000     # 或双击 启动下载站.bat
 ```
 
-启动后会打印 `http://<本机IP>:8000`，同网络的人打开就能选版本、下载。
+启动后会打印 `http://<本机IP>:8000`，打开就能选版本、下载。
 发布新版本一条命令：`python add_release.py --version v1.1.0`（自动打包 + 算 sha256 + 更新页面）。
 详见 [site/README.md](site/README.md)（含本地、公网、静态托管三种部署方式）。
 
