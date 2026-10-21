@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>反谋财害命器 · 版本下载</title>
+<style>
+  :root{
+    --bg:#101318; --panel:rgba(255,255,255,.045); --line:rgba(255,255,255,.09);
+    --text:#e9eef4; --sub:#9fb0c2; --accent:#5ae7ff; --accent2:#a9c0cf;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:
+      radial-gradient(900px 500px at 12% -10%, rgba(90,231,255,.14), transparent 60%),
+      radial-gradient(700px 500px at 100% 0%, rgba(169,192,207,.10), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:"Noto Sans SC","Microsoft YaHei UI","Segoe UI",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.65;
+    padding:0 18px 60px;
+  }
+  .wrap{max-width:940px;margin:0 auto}
+  header{padding:56px 0 26px}
+  .badge{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:12px;color:var(--accent);border:1px solid rgba(90,231,255,.35);
+    background:rgba(90,231,255,.07);padding:4px 10px;border-radius:999px;letter-spacing:.5px
+  }
+  h1{font-size:clamp(28px,4.6vw,42px);margin:16px 0 8px;font-weight:700;letter-spacing:-.5px}
+  h1 em{font-style:normal;color:var(--accent)}
+  .lead{color:var(--sub);font-size:15.5px;max-width:640px;margin:0}
+  .quote{margin:22px 0 0;padding-left:14px;border-left:2px solid rgba(90,231,255,.35);color:#b9c6d4;font-size:14px}
+
+  .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;margin-top:34px}
+  @media (max-width:820px){.grid{grid-template-columns:1fr}}
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:22px;
+    backdrop-filter:blur(14px);
+    box-shadow:0 10px 40px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  .card h2{font-size:13px;letter-spacing:1.2px;color:var(--sub);margin:0 0 14px;font-weight:600;text-transform:uppercase}
+
+  .verline{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .vnum{font-size:34px;font-weight:700;letter-spacing:-1px}
+  .tag{font-size:11.5px;color:#0d1116;background:var(--accent);padding:2px 8px;border-radius:6px;font-weight:700}
+  .date{color:var(--sub);font-size:13px}
+  .notes{color:#c8d4e0;font-size:14px;margin:14px 0 18px;white-space:pre-line}
+
+  .btn{
+    display:inline-flex;align-items:center;gap:9px;
+    background:linear-gradient(180deg,#7af0ff,#3fd6f0);
+    color:#04181d;font-weight:700;font-size:15px;
+    border:0;border-radius:11px;padding:12px 20px;cursor:pointer;
+    text-decoration:none;transition:.16s transform,.16s filter;
+    box-shadow:0 8px 24px rgba(90,231,255,.22)
+  }
+  .btn:hover{transform:translateY(-1px);filter:brightness(1.06)}
+  .btn.ghost{
+    background:transparent;color:var(--text);border:1px solid var(--line);
+    box-shadow:none;font-weight:500;font-size:13.5px;padding:9px 14px
+  }
+  .btn.ghost:hover{background:rgba(255,255,255,.05)}
+  .meta{display:flex;gap:18px;flex-wrap:wrap;color:var(--sub);font-size:12.5px;margin-top:14px}
+  .meta code{color:#b9e9f5;background:rgba(90,231,255,.08);padding:1px 6px;border-radius:5px}
+
+  .vlist{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+  .vrow{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:11px 13px;border:1px solid var(--line);border-radius:11px;cursor:pointer;
+    transition:.14s background,.14s border-color;background:transparent;color:inherit;text-align:left;width:100%
+  }
+  .vrow:hover{background:rgba(255,255,255,.045);border-color:rgba(90,231,255,.35)}
+  .vrow.on{border-color:rgba(90,231,255,.6);background:rgba(90,231,255,.07)}
+  .vrow .n{font-weight:600}
+  .vrow .s{color:var(--sub);font-size:12px}
+
+  .steps{margin:34px 0 0;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:820px){.steps{grid-template-columns:1fr}}
+  .step{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+  .step b{display:block;color:var(--accent);font-size:12px;letter-spacing:1px;margin-bottom:8px}
+  .step p{margin:0;color:#c3cfdb;font-size:13.5px}
+  footer{margin-top:44px;color:#6f7f90;font-size:12.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .muted{color:var(--sub)}
+  .loading{color:var(--sub);font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="badge">● 校园网 · 内测分发</span>
+    <h1>反谋财害命<em>器</em></h1>
+    <p class="lead">不依赖浏览器的桌面浮窗：按下 <b>Ctrl + Alt + Q</b> 框选屏幕上的题目，答案、解析、考点直接出现在浮窗里。截图不落盘，只进剪贴板。</p>
+    <p class="quote">“浪费别人的时间等于谋财害命。”——水课的本质就是谋杀</p>
+  </header>
+
+  <div class="grid">
+    <section class="card">
+      <h2>当前选择</h2>
+      <div id="main"><p class="loading">正在读取版本清单…</p></div>
+    </section>
+
+    <aside class="card">
+      <h2>版本选择</h2>
+      <div class="vlist" id="vlist"><p class="loading">…</p></div>
+      <p class="muted" style="font-size:12.5px;margin:16px 0 0">建议用最新版；旧版仅作留档，遇到问题请升级。</p>
+    </aside>
+  </div>
+
+  <div class="steps">
+    <div class="step"><b>01 下载</b><p>点“下载”得到 zip，解压到任意目录（路径别带空格更省事）。</p></div>
+    <div class="step"><b>02 准备环境</b><p>需要 Python 3.11+ 与 <code>PySide6-Essentials</code>、<code>requests</code>；包内 README 有一次性安装命令。</p></div>
+    <div class="step"><b>03 启动</b><p>双击 <code>启动反谋财害命器.bat</code>。首次运行会自动申请全局热键权限。</p></div>
+  </div>
+
+  <footer>
+    <span>反谋财害命器 · <span id="footver">v?</span> · 由 hb 维护</span>
+    <span><a href="CHANGELOG.md">更新记录</a> · <a href="releases/">安装包目录</a></span>
+  </footer>
+</div>
+
+<script id="versions-inline" type="application/json">{"latest":"v1.1.1","versions":[{"version":"v1.1.1","date":"2026-10-20","file":"fhcmd-v1.1.1.zip","size":58578,"sha256":"a417644f5fab3820fbb5c0aee7f35bf763e33b7817586befbcee53218a732d11","notes":"【修复】\n· 设置窗被置顶浮窗**完全遮挡**、根本没法用：改为**独立的置顶模态窗**（无父窗口 + `WindowStaysOnTopHint`），\n显示时 `raise_()` + 激活窗口两次；位置自动放到浮窗左侧空地，放不下就改右边或居中\n· 关闭设置窗后自动把浮窗重新抬到最前","requires":"Windows 10/11 · Python 3.11+"},{"version":"v1.1.0","date":"2026-10-20","file":"fhcmd-v1.1.0.zip","size":57984,"sha256":"7273d9b4f937c41742d6241da7e8fe6a5aaac39e95a577610eb2052716d52965","notes":"【新增：设置窗口（发给别人也能自己填）】\n· 右上角新增 **⚙** 按钮（右键菜单里也有「设置」）：填 `接口地址 / 模型 / API Key`，带**「测试连接」**，\n保存即生效，不用重启、不用手改 JSON\n· 首次运行若没检测到 Key，**自动弹出设置窗**；截图时缺 Key 也会弹\n· Key 用密码框显示，只写进本机 `config.json`，不上传任何地方\n【新增：版本下载站（site/）】\n· 版本选择 + 下载 + 下载次数 + sha256 校验值，深色页面与程序同一套视觉\n· `serve.py` 默认 **80 端口**（地址不用带端口），被占用自动退到 8000/8080\n· 页面二维码 `/qr.png`（按访问地址动态生成），手机扫码直达\n· 一键发布新版本：`python site/add_release.py --version vX.Y.Z`\n· 修掉 Windows 上 `allow_reuse_address` 导致两个进程抢同一端口的隐患","requires":"Windows 10/11 · Python 3.11+"},{"version":"v1.0.0","date":"2026-10-20","file":"fhcmd-v1.0.0.zip","size":55264,"sha256":"9683e2bc67659c35de45ebf9ee0643347ff98d8cb8005bcc9b1fbf930b1fb6fc","notes":"第一个可用版本（此前都是边做边改，无版本记录）。\n【核心】\n· 无浏览器依赖的置顶浮窗，`Ctrl+Alt+Q` 全局热键框选屏幕区域\n· 框选后直接把图交给视觉模型（DeepSeek `deepseek-v4-flash-vision-exp`），流式返回\n· 输出固定四段：题目 / 答案 / 解析 / 考点；看不清的字用 ▢ 标注，禁止编造题干\n· 截图**不落盘**，只进剪贴板 + 发给模型；支持文字追问（带上下文）、复制、清空、停止\n【交互】\n· 两档最小化：贴边悬浮小球（58px，单击展开、拖动吸边、右键菜单）→ 托盘隐藏区\n· 框选光标：大号青色准星 + 全屏十字线 + 实时坐标 + 选区像素尺寸；Esc/右键取消\n· 窗口位置/尺寸/主题/小球位置自动记忆\n【外观】\n· 两套主题，标题栏 `◐` 随时切换（含托盘/小球菜单）：","requires":"Windows 10/11 · Python 3.11+"}]}</script>
+<script>
+const fmtSize = b => b >= 1048576 ? (b/1048576).toFixed(2)+" MB" : Math.round(b/1024)+" KB";
+
+async function loadData(){
+  // 1) 本机/校园网服务器：带下载次数
+  try{
+    const r = await fetch("api/versions", {cache:"no-store"});
+    if (r.ok) { const d = await r.json(); d.__mode = "server"; return d; }
+  }catch(e){}
+  // 2) 纯静态托管（GitHub Pages 等）：读同目录 json
+  try{
+    const r = await fetch("versions.json", {cache:"no-store"});
+    if (r.ok) { const d = await r.json(); d.__mode = "static"; return d; }
+  }catch(e){}
+  // 3) 兜底：页面里内联的清单（双击本地文件也能显示）
+  return JSON.parse(document.getElementById("versions-inline").textContent);
+}
+
+function render(data){
+  const vs = (data.versions || []).slice().sort((a,b)=> b.version.localeCompare(a.version, undefined, {numeric:true}));
+  if (!vs.length){ document.getElementById("main").innerHTML = '<p class="loading">还没有发布任何版本。</p>'; return; }
+  const latest = vs.find(v=>v.version===data.latest) || vs[0];
+  document.getElementById("footver").textContent = latest.version;
+
+  const pick = ver => {
+    const v = vs.find(x=>x.version===ver) || latest;
+    const isLatest = v.version === latest.version;
+    const href = (data.__mode === "server" ? "download/" : "releases/") + v.file;
+    // 服务器模式下多给一张二维码：手机扫一下就进来，不用手打地址和端口
+    const qrHtml = data.__mode === "server"
+      ? '<div style="display:flex;align-items:center;gap:14px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)">'
+        + '<img src="qr.png?t=' + Date.now() + '" alt="扫码打开" width="104" height="104" '
+        + 'style="border-radius:10px;background:#fff;padding:6px" onerror="this.parentNode.style.display=\'none\'">'
+        + '<div class="muted" style="font-size:12.5px;line-height:1.6">手机扫码直接打开<br>不用手打地址和端口</div></div>'
+      : "";
+    document.getElementById("main").innerHTML = `
+      <div class="verline">
+        <span class="vnum">${v.version}</span>
+        ${isLatest ? '<span class="tag">最新</span>' : '<span class="date">历史版本</span>'}
+        <span class="date">${v.date || ""}</span>
+      </div>
+      <div class="notes">${(v.notes || "").replace(/</g,"&lt;")}</div>
+      <a class="btn" href="${href}" download>↓ 下载 ${v.version}</a>
+      <button class="btn ghost" onclick="copyLink('${href}')">复制下载链接</button>
+      <div class="meta">
+        <span>文件 <code>${v.file}</code></span>
+        <span>大小 ${v.size ? fmtSize(v.size) : "—"}</span>
+        ${v.sha256 ? `<span>SHA-256 <code>${v.sha256.slice(0,16)}…</code></span>` : ""}
+        <span>下载 ${v.downloads ?? 0} 次</span>
+        <span>要求 ${v.requires || "Windows 10/11"}</span>
+      </div>
+      ${qrHtml}`;
+    [...document.querySelectorAll(".vrow")].forEach(el=>el.classList.toggle("on", el.dataset.v === v.version));
+  };
+
+  document.getElementById("vlist").innerHTML = vs.map(v=>`
+    <button class="vrow${v.version===latest.version?" on":""}" data-v="${v.version}" onclick="pickVersion('${v.version}')">
+      <span class="n">${v.version}${v.version===latest.version?" · 最新":""}</span>
+      <span class="s">${v.size ? fmtSize(v.size) : ""}　${v.downloads??0} 次</span>
+    </button>`).join("");
+
+  window.pickVersion = pick;
+  pick(latest.version);
+}
+
+function copyLink(href){
+  const url = new URL(href, location.href).href;
+  navigator.clipboard?.writeText(url).then(
+    ()=> alert("已复制：\n" + url),
+    ()=> prompt("复制这个链接：", url)
+  );
+}
+
+loadData().then(render).catch(e=>{
+  document.getElementById("main").innerHTML = '<p class="loading">读取版本清单失败：' + e + '</p>';
+});
+</script>
+</body>
+</html>
