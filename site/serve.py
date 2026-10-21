@@ -31,7 +31,7 @@ DL_LOG = ROOT / "downloads.log"
 
 
 def lan_ips():
-    """列出本机可能被同学访问到的 IPv4（不含回环）"""
+    """列出本机可能被其他设备访问到的 IPv4（不含回环）"""
     ips = set()
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -214,7 +214,7 @@ def main():
     print("  访问地址:")
     print(f"    本机      http://127.0.0.1{suffix}")
     for ip in lan_ips():
-        print(f"    局域网/校园网  http://{ip}{suffix}")
+        print(f"    局域网        http://{ip}{suffix}")
     print(f"  二维码    http://127.0.0.1{suffix}/qr.png  （页面右侧也直接显示）")
     print("  提示: 首次运行 Windows 会弹防火墙提示，勾选“专用网络”并允许")
     print("  Ctrl+C 停止")

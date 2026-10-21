@@ -5,7 +5,7 @@
 它会做三件事：
   1. 本地站点没在跑就先启动 serve.py（80 端口）
   2. 启动 cloudflared 快速隧道，从输出里抓出 https://xxx.trycloudflare.com
-  3. 把地址打印出来、写进 public_url.txt，并复制到剪贴板——直接发给同学
+  3. 把地址打印出来、写进 public_url.txt，并复制到剪贴板——直接发给需要的人
 
 注意：快速隧道是临时的，关掉这个窗口就失效；每次启动地址都会变。
 """
@@ -118,7 +118,7 @@ def main():
     (ROOT / "public_url.txt").write_text(url + "\n", encoding="utf-8")
     copied = copy_to_clipboard(url)
     print("=" * 64)
-    print("  公网地址（发给同学，校园网/4G 都能打开）：\n")
+    print("  公网地址（任何人、任何网络都能打开）：\n")
     print(f"    {url}\n")
     print(f"  自测：{'✅ 公网访问正常' if ok else '⚠ 隧道已连，但自测没通过（可能刚建好，等 10 秒再刷）'}")
     print(f"  {'已复制到剪贴板，直接粘贴即可' if copied else '复制上面这行发出去'}")

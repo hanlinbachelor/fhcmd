@@ -1,11 +1,21 @@
 {
-  "latest": "v1.1.1",
+  "latest": "v1.1.2",
   "display_names": {
     "fhcmd-v1.0.0.zip": "反谋财害命器-v1.0.0.zip",
     "fhcmd-v1.1.0.zip": "反谋财害命器-v1.1.0.zip",
-    "fhcmd-v1.1.1.zip": "反谋财害命器-v1.1.1.zip"
+    "fhcmd-v1.1.1.zip": "反谋财害命器-v1.1.1.zip",
+    "fhcmd-v1.1.2.zip": "反谋财害命器-v1.1.2.zip"
   },
   "versions": [
+    {
+      "version": "v1.1.2",
+      "date": "2026-10-21",
+      "file": "fhcmd-v1.1.2.zip",
+      "size": 58657,
+      "sha256": "5f06a27247c95a6935baf9606849fbdef0eb926090a9d7eebc44f906636eb312",
+      "notes": "【改进】\n· 站点与文档措辞统一为中性表述，去掉场景限定\n· 新增 GitHub Actions 发布工作流：推送 `site/` 后自动部署到 GitHub Pages",
+      "requires": "Windows 10/11 · Python 3.11+"
+    },
     {
       "version": "v1.1.1",
       "date": "2026-10-20",

@@ -96,10 +96,10 @@
 <body>
 <div class="wrap">
   <header>
-    <span class="badge">● 校园网 · 内测分发</span>
+    <span class="badge">● 内测分发 · 免费使用</span>
     <h1>反谋财害命<em>器</em></h1>
     <p class="lead">不依赖浏览器的桌面浮窗：按下 <b>Ctrl + Alt + Q</b> 框选屏幕上的题目，答案、解析、考点直接出现在浮窗里。截图不落盘，只进剪贴板。</p>
-    <p class="quote">“浪费别人的时间等于谋财害命。”——水课的本质就是谋杀</p>
+    <p class="quote">“浪费别人的时间等于谋财害命。”——这就是名字的由来</p>
   </header>
 
   <div class="grid">
@@ -122,17 +122,17 @@
   </div>
 
   <footer>
-    <span>反谋财害命器 · <span id="footver">v?</span> · 由 hb 维护</span>
+    <span>反谋财害命器 · <span id="footver">v?</span> · 由作者维护</span>
     <span><a href="CHANGELOG.md">更新记录</a> · <a href="releases/">安装包目录</a></span>
   </footer>
 </div>
 
-<script id="versions-inline" type="application/json">{"latest":"v1.1.1","versions":[{"version":"v1.1.1","date":"2026-10-20","file":"fhcmd-v1.1.1.zip","size":58578,"sha256":"a417644f5fab3820fbb5c0aee7f35bf763e33b7817586befbcee53218a732d11","notes":"【修复】\n· 设置窗被置顶浮窗**完全遮挡**、根本没法用：改为**独立的置顶模态窗**（无父窗口 + `WindowStaysOnTopHint`），\n显示时 `raise_()` + 激活窗口两次；位置自动放到浮窗左侧空地，放不下就改右边或居中\n· 关闭设置窗后自动把浮窗重新抬到最前","requires":"Windows 10/11 · Python 3.11+"},{"version":"v1.1.0","date":"2026-10-20","file":"fhcmd-v1.1.0.zip","size":57984,"sha256":"7273d9b4f937c41742d6241da7e8fe6a5aaac39e95a577610eb2052716d52965","notes":"【新增：设置窗口（发给别人也能自己填）】\n· 右上角新增 **⚙** 按钮（右键菜单里也有「设置」）：填 `接口地址 / 模型 / API Key`，带**「测试连接」**，\n保存即生效，不用重启、不用手改 JSON\n· 首次运行若没检测到 Key，**自动弹出设置窗**；截图时缺 Key 也会弹\n· Key 用密码框显示，只写进本机 `config.json`，不上传任何地方\n【新增：版本下载站（site/）】\n· 版本选择 + 下载 + 下载次数 + sha256 校验值，深色页面与程序同一套视觉\n· `serve.py` 默认 **80 端口**（地址不用带端口），被占用自动退到 8000/8080\n· 页面二维码 `/qr.png`（按访问地址动态生成），手机扫码直达\n· 一键发布新版本：`python site/add_release.py --version vX.Y.Z`\n· 修掉 Windows 上 `allow_reuse_address` 导致两个进程抢同一端口的隐患","requires":"Windows 10/11 · Python 3.11+"},{"version":"v1.0.0","date":"2026-10-20","file":"fhcmd-v1.0.0.zip","size":55264,"sha256":"9683e2bc67659c35de45ebf9ee0643347ff98d8cb8005bcc9b1fbf930b1fb6fc","notes":"第一个可用版本（此前都是边做边改，无版本记录）。\n【核心】\n· 无浏览器依赖的置顶浮窗，`Ctrl+Alt+Q` 全局热键框选屏幕区域\n· 框选后直接把图交给视觉模型（DeepSeek `deepseek-v4-flash-vision-exp`），流式返回\n· 输出固定四段：题目 / 答案 / 解析 / 考点；看不清的字用 ▢ 标注，禁止编造题干\n· 截图**不落盘**，只进剪贴板 + 发给模型；支持文字追问（带上下文）、复制、清空、停止\n【交互】\n· 两档最小化：贴边悬浮小球（58px，单击展开、拖动吸边、右键菜单）→ 托盘隐藏区\n· 框选光标：大号青色准星 + 全屏十字线 + 实时坐标 + 选区像素尺寸；Esc/右键取消\n· 窗口位置/尺寸/主题/小球位置自动记忆\n【外观】\n· 两套主题，标题栏 `◐` 随时切换（含托盘/小球菜单）：","requires":"Windows 10/11 · Python 3.11+"}]}</script>
+<script id="versions-inline" type="application/json">{"latest":"v1.1.2","versions":[{"version":"v1.1.2","date":"2026-10-21","file":"fhcmd-v1.1.2.zip","size":58657,"sha256":"5f06a27247c95a6935baf9606849fbdef0eb926090a9d7eebc44f906636eb312","notes":"【改进】\n· 站点与文档措辞统一为中性表述，去掉场景限定\n· 新增 GitHub Actions 发布工作流：推送 `site/` 后自动部署到 GitHub Pages","requires":"Windows 10/11 · Python 3.11+"},{"version":"v1.1.1","date":"2026-10-20","file":"fhcmd-v1.1.1.zip","size":58578,"sha256":"a417644f5fab3820fbb5c0aee7f35bf763e33b7817586befbcee53218a732d11","notes":"【修复】\n· 设置窗被置顶浮窗**完全遮挡**、根本没法用：改为**独立的置顶模态窗**（无父窗口 + `WindowStaysOnTopHint`），\n显示时 `raise_()` + 激活窗口两次；位置自动放到浮窗左侧空地，放不下就改右边或居中\n· 关闭设置窗后自动把浮窗重新抬到最前","requires":"Windows 10/11 · Python 3.11+"},{"version":"v1.1.0","date":"2026-10-20","file":"fhcmd-v1.1.0.zip","size":57984,"sha256":"7273d9b4f937c41742d6241da7e8fe6a5aaac39e95a577610eb2052716d52965","notes":"【新增：设置窗口（发给别人也能自己填）】\n· 右上角新增 **⚙** 按钮（右键菜单里也有「设置」）：填 `接口地址 / 模型 / API Key`，带**「测试连接」**，\n保存即生效，不用重启、不用手改 JSON\n· 首次运行若没检测到 Key，**自动弹出设置窗**；截图时缺 Key 也会弹\n· Key 用密码框显示，只写进本机 `config.json`，不上传任何地方\n【新增：版本下载站（site/）】\n· 版本选择 + 下载 + 下载次数 + sha256 校验值，深色页面与程序同一套视觉\n· `serve.py` 默认 **80 端口**（地址不用带端口），被占用自动退到 8000/8080\n· 页面二维码 `/qr.png`（按访问地址动态生成），手机扫码直达\n· 一键发布新版本：`python site/add_release.py --version vX.Y.Z`\n· 修掉 Windows 上 `allow_reuse_address` 导致两个进程抢同一端口的隐患","requires":"Windows 10/11 · Python 3.11+"},{"version":"v1.0.0","date":"2026-10-20","file":"fhcmd-v1.0.0.zip","size":55264,"sha256":"9683e2bc67659c35de45ebf9ee0643347ff98d8cb8005bcc9b1fbf930b1fb6fc","notes":"第一个可用版本（此前都是边做边改，无版本记录）。\n【核心】\n· 无浏览器依赖的置顶浮窗，`Ctrl+Alt+Q` 全局热键框选屏幕区域\n· 框选后直接把图交给视觉模型（DeepSeek `deepseek-v4-flash-vision-exp`），流式返回\n· 输出固定四段：题目 / 答案 / 解析 / 考点；看不清的字用 ▢ 标注，禁止编造题干\n· 截图**不落盘**，只进剪贴板 + 发给模型；支持文字追问（带上下文）、复制、清空、停止\n【交互】\n· 两档最小化：贴边悬浮小球（58px，单击展开、拖动吸边、右键菜单）→ 托盘隐藏区\n· 框选光标：大号青色准星 + 全屏十字线 + 实时坐标 + 选区像素尺寸；Esc/右键取消\n· 窗口位置/尺寸/主题/小球位置自动记忆\n【外观】\n· 两套主题，标题栏 `◐` 随时切换（含托盘/小球菜单）：","requires":"Windows 10/11 · Python 3.11+"}]}</script>
 <script>
 const fmtSize = b => b >= 1048576 ? (b/1048576).toFixed(2)+" MB" : Math.round(b/1024)+" KB";
 
 async function loadData(){
-  // 1) 本机/校园网服务器：带下载次数
+  // 1) 自建服务器：带下载次数
   try{
     const r = await fetch("api/versions", {cache:"no-store"});
     if (r.ok) { const d = await r.json(); d.__mode = "server"; return d; }
