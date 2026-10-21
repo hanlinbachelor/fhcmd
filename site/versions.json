@@ -1,13 +1,23 @@
 {
-  "latest": "v1.2.0",
+  "latest": "v1.2.1",
   "display_names": {
     "fhcmd-v1.0.0.zip": "反谋财害命器-v1.0.0.zip",
     "fhcmd-v1.1.0.zip": "反谋财害命器-v1.1.0.zip",
     "fhcmd-v1.1.1.zip": "反谋财害命器-v1.1.1.zip",
     "fhcmd-v1.1.2.zip": "反谋财害命器-v1.1.2.zip",
-    "fhcmd-v1.2.0.zip": "反谋财害命器-v1.2.0.zip"
+    "fhcmd-v1.2.0.zip": "反谋财害命器-v1.2.0.zip",
+    "fhcmd-v1.2.1.zip": "反谋财害命器-v1.2.1.zip"
   },
   "versions": [
+    {
+      "version": "v1.2.1",
+      "date": "2026-10-21",
+      "file": "fhcmd-v1.2.1.zip",
+      "size": 40523946,
+      "sha256": "d788e9046aa3483cae1ded817584caba7cbdf9828b5f4fc895271817348ac621",
+      "notes": "【修复（都是 exe 版暴露出来的真问题）】\n· **配置丢失**：打包后 `__file__` 指向临时解包目录，`config.json` 会写进 temp、重启就没了。\n改为打包时用 `sys.executable` 的目录 —— 配置、日志都落在 **exe 旁边**（已用模拟 frozen 环境验证）\n· **误发剪贴板图片**：输入框为空时点「发送」会**直接把剪贴板里的图**当题目发出去，\n剪贴板里残留的旧图（例如之前那张“四史”截图）会被当题解一遍。\n现在会先弹一个小窗显示**缩略图**问你“要发送这张图吗？”，默认按钮是「取消」",
+      "requires": "Windows 10/11 · Python 3.11+"
+    },
     {
       "version": "v1.2.0",
       "date": "2026-10-21",

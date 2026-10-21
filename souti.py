@@ -32,12 +32,19 @@ from PySide6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout,
                                QSizeGrip, QToolButton, QFrame, QMessageBox,
                                QSystemTrayIcon, QMenu, QDialog)
 
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 APP_NAME = "反谋财害命器"
 
 BACKDROP_DOWNSCALE = 8          # 抓来的背景先缩小再放大 = 廉价高斯模糊
 
-APP_DIR = Path(__file__).resolve().parent
+def _app_dir() -> Path:
+    """打包成 exe 后 __file__ 在临时解包目录里，配置必须放在 exe 旁边，否则每次重启都丢"""
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parent
+
+
+APP_DIR = _app_dir()
 CONFIG_PATH = APP_DIR / "config.json"
 HISTORY_DIR = APP_DIR / "history"
 
@@ -1391,17 +1398,30 @@ class FloatWindow(QWidget):
         self._start_worker()
 
     def on_send(self):
-        """点「发送」/回车：有文字就发文字；没文字但剪贴板有图，就发剪贴板里的图"""
+        """点「发送」/回车：有文字就发文字；没文字时，先问一句要不要发剪贴板里的图
+        （以前是直接发，容易把剪贴板里残留的旧图当成题目发出去）"""
         text = self.input.text().strip()
         if text:
             self.ask_text(text)
             return
         kb = QGuiApplication.clipboard().image()
-        if not kb.isNull():
+        if kb.isNull():
+            self.status.setText("先输入题目，或先截图/复制一张图片")
+            return
+        # 让用户先看一眼是不是要发的图
+        prev = QPixmap.fromImage(kb).scaled(360, 220, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        box = QMessageBox(self)
+        box.setWindowTitle("发送剪贴板里的图片？")
+        box.setIconPixmap(prev)
+        box.setText("输入框是空的。\n要把剪贴板里的这张图当题目发送吗？")
+        box.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
+        box.setDefaultButton(QMessageBox.Cancel)
+        box.setWindowFlag(Qt.WindowStaysOnTopHint, True)
+        if box.exec() == QMessageBox.Yes:
             self.input.clear()
             self.send_image(kb)
         else:
-            self.status.setText("先输入题目，或先截图/复制一张图片")
+            self.status.setText("已取消（剪贴板内容没有发送）")
 
     def ask_text(self, text):
         text = (text or "").strip()
