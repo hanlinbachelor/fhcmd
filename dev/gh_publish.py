@@ -6,6 +6,7 @@
        因此用 REST API 完成（不依赖 git push）。
 """
 import base64
+import os
 import json
 import sys
 import time
@@ -14,7 +15,8 @@ from pathlib import Path
 import requests
 
 APP = Path(__file__).resolve().parent.parent
-TOKEN_FILE = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(r"C:\Users\hanli\AppData\Local\Temp\gh_token.txt")
+TOKEN_FILE = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(
+    os.path.expandvars(r"%LOCALAPPDATA%\hermes\secrets\github_fhcmd_token.txt"))
 REPO = sys.argv[2] if len(sys.argv) > 2 else "fhcmd"
 API = "https://api.github.com"
 HDRS = {}

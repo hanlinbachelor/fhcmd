@@ -1,6 +1,6 @@
 # 反谋财害命器 · 截图搜题浮窗
 
-**当前版本：v1.0.0**　（版本历史见 [CHANGELOG.md](CHANGELOG.md)）
+**当前版本：v1.2.0**　（版本历史见 [CHANGELOG.md](CHANGELOG.md)）
 
 > “浪费别人的时间等于谋财害命。”——这就是名字的由来
 
@@ -9,9 +9,24 @@
 
 ---
 
-## 一键启动
+## 安装与启动
 
-双击 **`启动反谋财害命器.bat`**（无控制台窗口，启动后即出现在屏幕右侧，可拖到任意位置）。
+有两种分发形式，**推荐第一种**（不需要装 Python）：
+
+### A. 免安装版（推荐）
+
+压缩包里有 `反谋财害命器.exe` —— **双击就能用**，不装 Python、不装依赖。
+第一次启动会弹出设置窗，填接口地址 / 模型 / API Key 即可（详见下文）。
+
+### B. 源码版
+
+需要本机有 **Python 3.10+**。双击 **`启动反谋财害命器.bat`**：
+
+- 没有 `.venv` 时，脚本会**自动创建虚拟环境并安装依赖**（`requirements.txt`，走清华镜像），只需一次
+- 装好后再次双击，直接启动（无控制台窗口）
+- 如果这台电脑没有 Python，脚本会明确提示去装，或改用 A 方案
+
+> 手动安装：`python -m venv .venv` → `.venv\Scripts\python -m pip install -r requirements.txt`
 
 ## 用法
 
@@ -86,6 +101,24 @@
 
 （`api_key` 留空时，程序会去找环境变量，名字写在 `api_key_env` 里。）
 
+## 发版（一条命令搞定）
+
+```bash
+.venv\Scripts\python.exe dev/release_all.py            # 用当前 __version__
+.venv\Scripts\python.exe dev/release_all.py v1.2.0     # 指定新版本号
+```
+
+它会依次：打包 zip → 更新 `site/versions.json` → git commit → 推到 GitHub → 建 Release 并上传附件。
+网页端 <https://hanlinbachelor.github.io/fhcmd/> 由 GitHub Actions 自动发布（推送 `site/` 即触发）。
+
+- 仓库：<https://github.com/hanlinbachelor/fhcmd>
+- 发布页：<https://github.com/hanlinbachelor/fhcmd/releases>
+- GitHub 令牌保存在 `%LOCALAPPDATA%\hermes\secrets\github_fhcmd_token.txt`（仅本账户可读）；
+  不用了去 <https://github.com/settings/tokens> 撤销并删掉该文件即可
+
+> 注意：这台机器所在网络无法访问 `github.com` 网页，但 `api.github.com` 与 `github.io` 正常，
+> 所以发布走 API、访问走 Pages，不受影响。
+
 ## 配置（`config.json`）
 
 | 字段 | 默认 | 说明 |
@@ -113,11 +146,13 @@
 
 ```
 souti.py                  主程序（全部逻辑，单文件；版本号在文件顶部 __version__）
+requirements.txt          依赖清单（PySide6-Essentials、requests）
 config.json               本机配置（.gitignore 忽略；模板见 config.example.json）
 CHANGELOG.md              版本记录
-启动反谋财害命器.bat       启动器（pythonw，无控制台）
+启动反谋财害命器.bat       启动器：优先跑 exe，其次用 .venv，没有就自动建环境装依赖
+dist/反谋财害命器.exe      免安装版（PyInstaller 打出，发布包里的就是它）
 icon.ico / icon.png       图标（桌面快捷方式用）
-.venv/                    运行环境（PySide6-Essentials + requests）
+.venv/                    开发用运行环境（发布包不带，用户侧自动生成或用 exe）
 site/                     版本下载站（index.html + versions.json + releases/ + serve.py）
 dev/                      开发期自测脚本（截图链路、UI 快照、跨窗口剪贴板验证等）
 ```
@@ -130,12 +165,12 @@ cd site
 ```
 
 启动后会打印 `http://<本机IP>:8000`，打开就能选版本、下载。
-发布新版本一条命令：`python add_release.py --version v1.1.0`（自动打包 + 算 sha256 + 更新页面）。
+发布新版本一条命令：`python add_release.py --version v1.2.0`（自动打包 + 算 sha256 + 更新页面）。
 详见 [site/README.md](site/README.md)（含本地、公网、静态托管三种部署方式）。
 
 ## 版本与维护
 
-- 版本号：`souti.py` 顶部 `__version__ = "1.0.0"`，同一版本号会显示在**状态栏首屏**、**欢迎页右下**、
+- 版本号：`souti.py` 顶部 `__version__`（当前 v1.2.0），同一版本号会显示在**状态栏首屏**、**欢迎页右下**、
   **托盘提示**、**右键菜单底部**，一眼就能确认跑的是哪版
 - 发版三步：改 `__version__` → 在 `CHANGELOG.md` 加一节 → `git commit -m "vX.Y.Z: 一句话"`
 - 规则：**主**版本=改了用法/配置格式，**次**版本=加功能（新主题、新交互），**补**=修 bug/调颜色/改文案

@@ -1,12 +1,22 @@
 {
-  "latest": "v1.1.2",
+  "latest": "v1.2.0",
   "display_names": {
     "fhcmd-v1.0.0.zip": "反谋财害命器-v1.0.0.zip",
     "fhcmd-v1.1.0.zip": "反谋财害命器-v1.1.0.zip",
     "fhcmd-v1.1.1.zip": "反谋财害命器-v1.1.1.zip",
-    "fhcmd-v1.1.2.zip": "反谋财害命器-v1.1.2.zip"
+    "fhcmd-v1.1.2.zip": "反谋财害命器-v1.1.2.zip",
+    "fhcmd-v1.2.0.zip": "反谋财害命器-v1.2.0.zip"
   },
   "versions": [
+    {
+      "version": "v1.2.0",
+      "date": "2026-10-21",
+      "file": "fhcmd-v1.2.0.zip",
+      "size": 40522892,
+      "sha256": "5b09ba504ac84e2a08c0a21046d311552105f17ca8b2052719f6aa7fee91d9a7",
+      "notes": "【发布包终于能“双击即用”了】\n· 新增 **免安装版 `反谋财害命器.exe`**（PyInstaller 打包）：不装 Python、不装依赖，双击直接运行\n· 发布 zip 现在包含 exe + README + CHANGELOG + requirements.txt + 启动脚本\n· 源码版的 `启动反谋财害命器.bat` 重写：没有 `.venv` 时**自动创建虚拟环境并装依赖**（清华镜像，只一次）；\n没装 Python 会明确提示改用免安装版，不再只丢一句 `venv not found` 就退出\n· 新增 `requirements.txt`\n· 修 README：“当前版本”从错误的 v1.0.0 改为与程序一致；删掉“包内自带 .venv/一键启动”这类与实际不符的说法，\n改成「免安装版 / 源码版」两种真实路径",
+      "requires": "Windows 10/11 · Python 3.11+"
+    },
     {
       "version": "v1.1.2",
       "date": "2026-10-21",

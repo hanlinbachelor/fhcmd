@@ -37,3 +37,9 @@ site/downloads.log
 # 隧道地址是临时的
 site/public_url.txt
 site/tunnel.log
+
+# PyInstaller 产物
+dist/
+build/
+*.spec
+build_exe.log

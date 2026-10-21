@@ -1,22 +1,29 @@
 # -*- coding: utf-8 -*-
 """给每个版本建 GitHub Release 并上传安装包附件（走 api/uploads.github.com）"""
 import json
+import os
 import sys
 from pathlib import Path
 
 import requests
 
 APP = Path(__file__).resolve().parent.parent
-TOK_FILE = Path(r"C:\Users\hanli\AppData\Local\Temp\gh_token.txt")
+CANDIDATES = [
+    Path(os.path.expandvars(r"%LOCALAPPDATA%\hermes\secrets\github_fhcmd_token.txt")),
+    Path(os.path.expandvars(r"%LOCALAPPDATA%\Temp\gh_token.txt")),
+]
 
 
 def get_token():
     import re
-    raw = TOK_FILE.read_text(encoding="utf-8", errors="ignore")
-    m = re.search(r"(ghp_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,})", raw)
-    if not m:
-        sys.exit("令牌文件里没找到令牌")
-    return m.group(1)
+    for p in CANDIDATES:
+        if not p.exists():
+            continue
+        raw = p.read_text(encoding="utf-8", errors="ignore")
+        m = re.search(r"(ghp_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,})", raw)
+        if m:
+            return m.group(1)
+    sys.exit("没找到令牌（%LOCALAPPDATA%\\hermes\\secrets\\github_fhcmd_token.txt）")
 
 
 TOK = get_token()

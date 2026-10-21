@@ -27,6 +27,7 @@ INCLUDE = [
     "config.example.json",
     "README.md",
     "CHANGELOG.md",
+    "requirements.txt",
     "启动反谋财害命器.bat",
     "icon.ico",
 ]
@@ -74,7 +75,11 @@ def build_zip(ver: str) -> Path:
     missing = [f for f in INCLUDE if not (APP / f).exists()]
     if missing:
         raise SystemExit("缺少文件：" + ", ".join(missing))
+    exe = APP / "dist" / "反谋财害命器.exe"
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as z:
+        if exe.exists():
+            # 优先带上免安装版 exe —— 用户双击即用，不需要 Python
+            z.write(exe, f"反谋财害命器-{ver}/反谋财害命器.exe")
         for f in INCLUDE:
             z.write(APP / f, f"反谋财害命器-{ver}/{f}")
     return out
