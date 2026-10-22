@@ -32,7 +32,7 @@ from PySide6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout,
                                QSizeGrip, QToolButton, QFrame, QMessageBox,
                                QSystemTrayIcon, QMenu, QDialog)
 
-__version__ = "1.2.1"
+__version__ = "1.2.2"
 APP_NAME = "反谋财害命器"
 
 BACKDROP_DOWNSCALE = 8          # 抓来的背景先缩小再放大 = 廉价高斯模糊
@@ -1043,7 +1043,7 @@ class FloatWindow(QWidget):
         self.input.setPalette(pal)
         self.input.returnPressed.connect(self.on_send)
         row.addWidget(self.input, 1)
-        self.btn_send = self._mkbtn("发送", "发送文字（输入框空时发送剪贴板里的图）", self.on_send)
+        self.btn_send = self._mkbtn("发送", "发送输入框里的文字", self.on_send)
         row.addWidget(self.btn_send)
         v.addLayout(row)
 
@@ -1366,12 +1366,8 @@ class FloatWindow(QWidget):
         except Exception:
             pass
         self.restore_window()     # 框完总要看到答案，所以一律展开窗口
-        # 不落盘、不留档：只把框选到的原图放进剪贴板，方便你自己粘到别处
-        try:
-            QGuiApplication.clipboard().setImage(img)
-            self.last_image_path = None
-        except Exception as e:
-            print("写剪贴板失败", e)
+        # 不碰剪贴板：截图既不从中读取，也不往里写入（图片只在内存里直接送模型）
+        self.last_image_path = None
         self.send_image(img)
 
     # 说明：程序不保存任何截图文件，历史截图也不会留在磁盘上
@@ -1398,30 +1394,13 @@ class FloatWindow(QWidget):
         self._start_worker()
 
     def on_send(self):
-        """点「发送」/回车：有文字就发文字；没文字时，先问一句要不要发剪贴板里的图
-        （以前是直接发，容易把剪贴板里残留的旧图当成题目发出去）"""
+        """点「发送」/回车：只发输入框里的文字。
+        不读剪贴板 —— 不碰剪贴板是硬要求，避免把无关的旧图当题目送出去。"""
         text = self.input.text().strip()
-        if text:
-            self.ask_text(text)
+        if not text:
+            self.status.setText("先输入题目，或按 Ctrl+Alt+Q 框选屏幕上的题目")
             return
-        kb = QGuiApplication.clipboard().image()
-        if kb.isNull():
-            self.status.setText("先输入题目，或先截图/复制一张图片")
-            return
-        # 让用户先看一眼是不是要发的图
-        prev = QPixmap.fromImage(kb).scaled(360, 220, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        box = QMessageBox(self)
-        box.setWindowTitle("发送剪贴板里的图片？")
-        box.setIconPixmap(prev)
-        box.setText("输入框是空的。\n要把剪贴板里的这张图当题目发送吗？")
-        box.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
-        box.setDefaultButton(QMessageBox.Cancel)
-        box.setWindowFlag(Qt.WindowStaysOnTopHint, True)
-        if box.exec() == QMessageBox.Yes:
-            self.input.clear()
-            self.send_image(kb)
-        else:
-            self.status.setText("已取消（剪贴板内容没有发送）")
+        self.ask_text(text)
 
     def ask_text(self, text):
         text = (text or "").strip()

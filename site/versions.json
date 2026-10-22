@@ -1,14 +1,24 @@
 {
-  "latest": "v1.2.1",
+  "latest": "v1.2.2",
   "display_names": {
     "fhcmd-v1.0.0.zip": "反谋财害命器-v1.0.0.zip",
     "fhcmd-v1.1.0.zip": "反谋财害命器-v1.1.0.zip",
     "fhcmd-v1.1.1.zip": "反谋财害命器-v1.1.1.zip",
     "fhcmd-v1.1.2.zip": "反谋财害命器-v1.1.2.zip",
     "fhcmd-v1.2.0.zip": "反谋财害命器-v1.2.0.zip",
-    "fhcmd-v1.2.1.zip": "反谋财害命器-v1.2.1.zip"
+    "fhcmd-v1.2.1.zip": "反谋财害命器-v1.2.1.zip",
+    "fhcmd-v1.2.2.zip": "反谋财害命器-v1.2.2.zip"
   },
   "versions": [
+    {
+      "version": "v1.2.2",
+      "date": "2026-10-22",
+      "file": "fhcmd-v1.2.2.zip",
+      "size": 40522915,
+      "sha256": "71cec04f954abc10cb614f3341114ab4cf4a9f7e652ee69eb2285eefa81ccdbb",
+      "notes": "【彻底不碰剪贴板】\n· 「发送」在输入框为空时**不再读取剪贴板**，只提示“先输入题目或按 Ctrl+Alt+Q 框选”\n· 框选截图后**不再写入剪贴板**（图片只在内存里直接送模型，不做任何中转）\n· 唯一保留的剪贴板操作是「复制」按钮 —— 那是你主动点它复制答案",
+      "requires": "Windows 10/11 · Python 3.11+"
+    },
     {
       "version": "v1.2.1",
       "date": "2026-10-21",
