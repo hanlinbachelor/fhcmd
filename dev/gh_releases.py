@@ -38,7 +38,8 @@ names = vers.get("display_names", {})
 for v in vers["versions"]:
     tag = v["version"]
     file = v["file"]
-    path = APP / "site" / "releases" / file
+    cands = [APP / "dist" / "pkgs" / file, APP / "site" / "releases" / file]
+    path = next((p for p in cands if p.exists()), cands[0])
     body = (v.get("notes") or "").strip()
     body += ("\n\n---\n"
              "**安装**：下载下面的 zip → 解压 → 双击 `启动反谋财害命器.bat`；"
@@ -69,14 +70,23 @@ for v in vers["versions"]:
         print(f"   ⚠ 本地缺文件 {path}")
         continue
     url = f"https://uploads.github.com/repos/{OWNER}/{REPO}/releases/{rel['id']}/assets"
-    with open(path, "rb") as fh:
-        up = requests.post(url, headers={**H, "Content-Type": "application/zip"},
-                           params={"name": file}, data=fh, timeout=300)
-    if up.status_code == 201:
-        a = up.json()
-        print(f"   ✅ 附件 {a['name']} {a['size']} 字节")
-    else:
-        print(f"   ❌ 附件上传失败 {up.status_code}: {up.text[:200]}")
+    ok = False
+    for attempt in range(1, 4):
+        try:
+            with open(path, "rb") as fh:
+                up = requests.post(url, headers={**H, "Content-Type": "application/zip"},
+                                   params={"name": file}, data=fh, timeout=900)
+            if up.status_code == 201:
+                a = up.json()
+                print(f"   ✅ 附件 {a['name']} {a['size']} 字节")
+                ok = True
+                break
+            print(f"   ⚠ 第 {attempt} 次失败 {up.status_code}: {up.text[:160]}")
+        except Exception as e:
+            print(f"   ⚠ 第 {attempt} 次网络异常: {e}")
+        time.sleep(5)
+    if not ok:
+        print("   ❌ 附件上传最终失败")
 
 # 3) 汇总
 print("\n=== 当前 Releases ===")

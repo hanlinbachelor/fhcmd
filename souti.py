@@ -16,6 +16,7 @@ import os
 import re
 import sys
 import time
+import tempfile
 import ctypes
 from ctypes import wintypes
 from pathlib import Path
@@ -26,13 +27,13 @@ from PySide6.QtCore import (Qt, QRect, QRectF, QPoint, QSize, QThread, Signal, Q
 from PySide6.QtGui import (QImage, QPixmap, QPainter, QColor, QPen, QFont,
                            QGuiApplication, QCursor, QPainterPath, QTextCursor,
                            QClipboard, QIcon, QKeySequence, QPalette,
-                           QActionGroup, QLinearGradient)
+                           QActionGroup, QLinearGradient, QAction)
 from PySide6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout,
                                QLabel, QPushButton, QTextBrowser, QLineEdit,
                                QSizeGrip, QToolButton, QFrame, QMessageBox,
                                QSystemTrayIcon, QMenu, QDialog)
 
-__version__ = "1.2.2"
+__version__ = "1.3.0"
 APP_NAME = "反谋财害命器"
 
 BACKDROP_DOWNSCALE = 8          # 抓来的背景先缩小再放大 = 廉价高斯模糊
@@ -57,6 +58,7 @@ DEFAULT_CFG = {
     "theme": "laser",
     "max_tokens": 4000,
     "temperature": 0.2,
+    "copy_on_capture": False,          # 截图后是否把图复制到剪贴板（默认关：不碰剪贴板）
     "window": {"x": 820, "y": 60, "w": 440, "h": 620, "collapsed": False},
 }
 
@@ -177,6 +179,129 @@ def md_inline(s: str) -> str:
     s = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", s)
     s = re.sub(r"`([^`]+)`", r"<span style='background:rgba(127,127,127,45);'>\1</span>", s)
     return s.replace("\n", "<br>")
+
+
+# ---------------------------------------------------------------- LaTeX 渲染
+MATH_DIR = Path(tempfile.gettempdir()) / "fhcmd_math"
+_MATH_CACHE: dict = {}
+
+
+def _fix_tex_args(s: str, cmd: str, nargs: int) -> str:
+    """把 \\frac1n、\\sqrt2 这种省略花括号的写法补成 \\frac{1}{n}，mathtext 才认"""
+    out, i = [], 0
+    while True:
+        j = s.find(cmd, i)
+        if j < 0:
+            out.append(s[i:])
+            break
+        out.append(s[i:j + len(cmd)])
+        k = j + len(cmd)
+        for _ in range(nargs):
+            while k < len(s) and s[k] == " ":
+                k += 1
+            if k < len(s) and s[k] == "{":
+                depth, st = 0, k
+                while k < len(s):
+                    if s[k] == "{":
+                        depth += 1
+                    elif s[k] == "}":
+                        depth -= 1
+                        if depth == 0:
+                            k += 1
+                            break
+                    k += 1
+                out.append(s[st:k])
+            elif k < len(s):
+                out.append("{" + s[k] + "}")
+                k += 1
+        i = k
+    return "".join(out)
+
+
+def normalize_tex(s: str) -> str:
+    s = _fix_tex_args(s, r"\frac", 2)
+    s = _fix_tex_args(s, r"\sqrt", 1)
+    s = _fix_tex_args(s, r"\vec", 1)
+    return s
+
+
+def render_math(expr: str, color: str = "#efeae2", fontsize: float = 12.0):
+    """把一段 LaTeX 渲染成 PNG 文件，返回 (路径, 宽, 高)；失败返回 None
+       用 matplotlib 的 mathtext：不需要装 LaTeX，体积也可控"""
+    expr = (expr or "").strip()
+    if not expr:
+        return None
+    key = (expr, color, fontsize)
+    if key in _MATH_CACHE:
+        return _MATH_CACHE[key]
+    try:
+        import hashlib
+        from matplotlib.backends.backend_agg import FigureCanvasAgg
+        from matplotlib.figure import Figure
+
+        MATH_DIR.mkdir(parents=True, exist_ok=True)
+        tex = normalize_tex(expr)
+        fig = Figure(figsize=(0.1, 0.1), dpi=200)
+        FigureCanvasAgg(fig)
+        fig.patch.set_alpha(0)
+        fig.text(0, 0, f"${tex}$", color=color, fontsize=fontsize)
+        name = hashlib.sha1(f"{tex}|{color}|{fontsize}".encode()).hexdigest()[:16] + ".png"
+        path = MATH_DIR / name
+        fig.savefig(path, format="png", transparent=True,
+                    bbox_inches="tight", pad_inches=0.04)
+        img = QImage(str(path))
+        if img.isNull():
+            return None
+        res = (str(path), img.width(), img.height())
+        _MATH_CACHE[key] = res
+        return res
+    except Exception as e:
+        print("数学公式渲染失败:", e)
+        return None
+
+
+_MATH_RE = re.compile(r"\$\$(.+?)\$\$|\$(.+?)\$|\\\[(.+?)\\\]|\\\((.+?)\\\)", re.S)
+
+
+def _math_img(m, color: str, fontsize: float = 12.0) -> str:
+    expr = m.group(1) or m.group(2) or m.group(3) or m.group(4) or ""
+    r = render_math(expr, color, fontsize)
+    if not r:
+        return m.group(0)
+    path, w, h = r
+    url = "file:///" + path.replace("\\", "/")
+    # 200dpi 出图，按 0.48 缩放贴近正文字号；vertical-align 让图片跟文字基线居中对齐
+    return (f'<img src="{url}" width="{int(w * 0.48)}" height="{int(h * 0.48)}"'
+            f' style="vertical-align:middle;">')
+
+
+def math_to_html(text: str, color: str, fontsize: float = 12.0) -> str:
+    """把文本里的 $...$ / $$...$$ 换成渲染好的图片；渲染不了就保留原样"""
+    if not text or ("$" not in text and "\\(" not in text and "\\[" not in text):
+        return text
+    return _MATH_RE.sub(lambda m: _math_img(m, color, fontsize), text)
+
+
+def _plain_html(s: str) -> str:
+    """纯文本段：先走 markdown，再把 x^2 / a_{n} 这类裸上下标变成 <sup>/<sub>"""
+    s = md_inline(s)
+    s = re.sub(r"\^\{([^{}]{1,14})\}", r"<sup>\1</sup>", s)
+    s = re.sub(r"\^([A-Za-z0-9+\-])", r"<sup>\1</sup>", s)
+    s = re.sub(r"_\{([^{}]{1,14})\}", r"<sub>\1</sub>", s)
+    s = re.sub(r"(?<![A-Za-z0-9])_([A-Za-z0-9])(?![A-Za-z0-9])", r"<sub>\1</sub>", s)
+    return s
+
+
+def rich_html(text: str, color: str, fontsize: float = 12.0) -> str:
+    """公式段渲染成图片，其余走 markdown + 上下标；顺序很重要（避免把 src 里的下划线当上下标）"""
+    text = text or ""
+    out, pos = [], 0
+    for m in _MATH_RE.finditer(text):
+        out.append(_plain_html(text[pos:m.start()]))
+        out.append(_math_img(m, color, fontsize))
+        pos = m.end()
+    out.append(_plain_html(text[pos:]))
+    return "".join(out)
 
 
 # ---------------------------------------------------------------- 配置
@@ -1238,6 +1363,13 @@ class FloatWindow(QWidget):
         m.addSeparator()
         m.addMenu(self.theme_menu)
         m.addAction("设置（接口 / 模型 / Key）…", self.open_settings)
+
+        # 剪贴板开关（默认关）
+        self.act_copy_img = QAction("截图后复制到剪贴板", m)
+        self.act_copy_img.setCheckable(True)
+        self.act_copy_img.setChecked(bool(self.cfg.get("copy_on_capture")))
+        self.act_copy_img.toggled.connect(self.toggle_copy_on_capture)
+        m.addAction(self.act_copy_img)
         m.addSeparator()
         m.addAction("收成悬浮球", self.minimize_to_ball)
         m.addAction("收进托盘（完全隐藏）", self.minimize_to_tray)
@@ -1366,7 +1498,12 @@ class FloatWindow(QWidget):
         except Exception:
             pass
         self.restore_window()     # 框完总要看到答案，所以一律展开窗口
-        # 不碰剪贴板：截图既不从中读取，也不往里写入（图片只在内存里直接送模型）
+        # 剪贴板默认不碰；只有用户在这个开关里主动勾选，才把框选图复制出去
+        if self.cfg.get("copy_on_capture"):
+            try:
+                QGuiApplication.clipboard().setImage(img)
+            except Exception as e:
+                print("写剪贴板失败", e)
         self.last_image_path = None
         self.send_image(img)
 
@@ -1494,15 +1631,16 @@ class FloatWindow(QWidget):
         ans = (secs.get("答案") or "").strip()
 
         if ans:
+            ans_html = rich_html(ans, t["text"], fontsize=15.0)
             self.answer_box.setText(
                 f'<span style="color:{t["ans_tag"]}; font-size:8.5pt;">答 案</span>'
-                f'<br><span style="color:{t["text"]}; font-size:15.5pt; font-weight:700;">{md_inline(ans)}</span>')
+                f'<br><span style="color:{t["text"]}; font-size:15.5pt; font-weight:700;">{ans_html}</span>')
             self.answer_box.setVisible(True)
         else:
             self.answer_box.setVisible(False)
 
         if not secs:                             # 模型没按格式走：退回 markdown
-            self.view.setMarkdown(text)
+            self.view.setHtml(rich_html(text, t["text"]))
             self.view.verticalScrollBar().setValue(0)
             return
 
@@ -1513,7 +1651,8 @@ class FloatWindow(QWidget):
                 continue
             blocks.append(
                 f'<div style="color:{t["ans_tag"]}; font-size:9pt; margin:2px 0 4px 0;">{k}</div>'
-                f'<div style="color:{t["text"]}; font-size:10.5pt; margin:0 0 12px 0;">{md_inline(body)}</div>')
+                f'<div style="color:{t["text"]}; font-size:10.5pt; margin:0 0 12px 0;">'
+                f'{rich_html(body, t["text"])}</div>')
         self.view.setHtml(
             f'<div style="font-family:\'{t["font_body"]}\'; line-height:158%;">'
             + "".join(blocks) + "</div>")
@@ -1542,6 +1681,15 @@ class FloatWindow(QWidget):
             return
         self.status.setText("还没配置 API Key · 在设置里填一次即可")
         self.open_settings()
+
+    def toggle_copy_on_capture(self, on):
+        """截图后是否把图复制到剪贴板（用户主动开，默认关）"""
+        self.cfg["copy_on_capture"] = bool(on)
+        try:
+            save_config(self.cfg)
+        except Exception as e:
+            print("保存配置失败", e)
+        self.status.setText("截图后复制到剪贴板：已开启" if on else "截图后复制到剪贴板：已关闭")
 
     def open_settings(self):
         """设置接口 / 模型 / Key，保存后立即生效（不用重启）"""

@@ -22,6 +22,10 @@ RELEASES = SITE / "releases"
 VERSIONS = SITE / "versions.json"
 INDEX = SITE / "index.html"
 
+GH_OWNER = "hanlinbachelor"
+GH_REPO = "fhcmd"
+BIG_MB = 20          # 超过这个体积就不进 git/Pages，改指向 GitHub Release 附件
+
 INCLUDE = [
     "souti.py",
     "config.example.json",
@@ -126,20 +130,33 @@ def main():
 
     zp = build_zip(ver)
     notes = args.notes or changelog_notes(ver) or f"{ver} 版本"
+    size = zp.stat().st_size
+    big = size > BIG_MB * 1024 * 1024
+    if big:
+        # 大包不进 git/Pages（一次性推送几十 MB 会被网络掐断），只留在本地并指向 Release 附件
+        keep = APP / "dist" / "pkgs"
+        keep.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(zp, keep / zp.name)
+        zp.unlink(missing_ok=True)
+        zp = keep / f"fhcmd-{ver}.zip"
     data = load()
     data["versions"] = [v for v in data["versions"] if v["version"] != ver]
-    data["versions"].append({
+    entry = {
         "version": ver,
         "date": date.today().isoformat(),
-        "file": zp.name,
-        "size": zp.stat().st_size,
+        "file": f"fhcmd-{ver}.zip",
+        "size": size,
         "sha256": sha256(zp),
         "notes": notes,
         "requires": args.requires,
-    })
+    }
+    if big:
+        entry["url"] = (f"https://github.com/{GH_OWNER}/{GH_REPO}/releases/download/"
+                        f"{ver}/fhcmd-{ver}.zip")
+    data["versions"].append(entry)
     data["versions"].sort(key=lambda v: [int(x) for x in v["version"].lstrip("v").split(".")], reverse=True)
     data["latest"] = data["versions"][0]["version"]
-    data.setdefault("display_names", {})[zp.name] = f"反谋财害命器-{ver}.zip"
+    data.setdefault("display_names", {})[f"fhcmd-{ver}.zip"] = f"反谋财害命器-{ver}.zip"
 
     VERSIONS.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
     sync_inline(data)
@@ -150,7 +167,7 @@ def main():
         shutil.copyfile(cl, SITE / "CHANGELOG.md")
 
     print(f"✅ 已发布 {ver}")
-    print(f"   包   : site/releases/{zp.name}  ({zp.stat().st_size/1048576:.2f} MB)")
+    print(f"   包   : {zp}  ({size/1048576:.2f} MB){'（大包，走 Release 附件）' if big else ''}")
     print(f"   sha  : {sha256(zp)[:32]}…")
     print(f"   说明 : {notes.splitlines()[0] if notes else ''}")
     print(f"   共 {len(data['versions'])} 个版本，最新 = {data['latest']}")

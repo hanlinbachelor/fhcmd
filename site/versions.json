@@ -1,5 +1,5 @@
 {
-  "latest": "v1.2.2",
+  "latest": "v1.3.0",
   "display_names": {
     "fhcmd-v1.0.0.zip": "反谋财害命器-v1.0.0.zip",
     "fhcmd-v1.1.0.zip": "反谋财害命器-v1.1.0.zip",
@@ -7,9 +7,20 @@
     "fhcmd-v1.1.2.zip": "反谋财害命器-v1.1.2.zip",
     "fhcmd-v1.2.0.zip": "反谋财害命器-v1.2.0.zip",
     "fhcmd-v1.2.1.zip": "反谋财害命器-v1.2.1.zip",
-    "fhcmd-v1.2.2.zip": "反谋财害命器-v1.2.2.zip"
+    "fhcmd-v1.2.2.zip": "反谋财害命器-v1.2.2.zip",
+    "fhcmd-v1.3.0.zip": "反谋财害命器-v1.3.0.zip"
   },
   "versions": [
+    {
+      "version": "v1.3.0",
+      "date": "2026-10-22",
+      "file": "fhcmd-v1.3.0.zip",
+      "size": 61372464,
+      "sha256": "1bc8e5a6e2f199e6f19b4d5a86ac0bb003c11e68c6be5e8f9b81afd5186848a7",
+      "notes": "【数学公式真渲染】\n· 答案/解析里的 `$...$`、`$$...$$`、`\\(...\\)`、`\\[...\\]` 会渲染成**真实排版的公式图片**\n（matplotlib mathtext，**不需要装 LaTeX**），按主题文字颜色出图，深浅主题都清楚\n· 裸写的 `x^3`、`a_{n}` 自动转成上下标；`\\frac1n` 这种省略花括号的写法自动补全\n· 公式与文字**垂直居中对齐**，不会被行高裁切；渲染失败自动退回原文，不会白屏\n【剪贴板开关】\n· 右键菜单新增「截图后复制到剪贴板」，**默认关闭**；勾选后框完图会放进剪贴板方便粘到别处",
+      "requires": "Windows 10/11 · Python 3.11+",
+      "url": "https://github.com/hanlinbachelor/fhcmd/releases/download/v1.3.0/fhcmd-v1.3.0.zip"
+    },
     {
       "version": "v1.2.2",
       "date": "2026-10-22",
