@@ -157,6 +157,12 @@ function render(data){
     const isLatest = v.version === latest.version;
     const href = v.url ? v.url
       : (data.__mode === "server" ? "download/" : "releases/") + v.file;
+    // 大包挂在 GitHub Release 上，国内直连常常不通 → 同时给一个镜像入口
+    const mirrorHtml = v.url
+      ? '<div style="margin-top:10px;font-size:12.5px;color:var(--muted)">直连不通？用镜像：'
+        + '<a href="https://gh-proxy.com/' + v.url + '" style="color:var(--accent)">gh-proxy</a>'
+        + ' · <a href="https://ghproxy.net/' + v.url + '" style="color:var(--accent)">ghproxy</a></div>'
+      : '';
     // 服务器模式下多给一张二维码：手机扫一下就进来，不用手打地址和端口
     const qrHtml = data.__mode === "server"
       ? '<div style="display:flex;align-items:center;gap:14px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)">'
@@ -180,6 +186,7 @@ function render(data){
         <span>下载 ${v.downloads ?? 0} 次</span>
         <span>要求 ${v.requires || "Windows 10/11"}</span>
       </div>
+      ${mirrorHtml}
       ${qrHtml}`;
     [...document.querySelectorAll(".vrow")].forEach(el=>el.classList.toggle("on", el.dataset.v === v.version));
   };
