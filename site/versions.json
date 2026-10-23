@@ -1,5 +1,5 @@
 {
-  "latest": "v1.3.0",
+  "latest": "v1.3.1",
   "display_names": {
     "fhcmd-v1.0.0.zip": "反谋财害命器-v1.0.0.zip",
     "fhcmd-v1.1.0.zip": "反谋财害命器-v1.1.0.zip",
@@ -8,9 +8,20 @@
     "fhcmd-v1.2.0.zip": "反谋财害命器-v1.2.0.zip",
     "fhcmd-v1.2.1.zip": "反谋财害命器-v1.2.1.zip",
     "fhcmd-v1.2.2.zip": "反谋财害命器-v1.2.2.zip",
-    "fhcmd-v1.3.0.zip": "反谋财害命器-v1.3.0.zip"
+    "fhcmd-v1.3.0.zip": "反谋财害命器-v1.3.0.zip",
+    "fhcmd-v1.3.1.zip": "反谋财害命器-v1.3.1.zip"
   },
   "versions": [
+    {
+      "version": "v1.3.1",
+      "date": "2026-10-23",
+      "file": "fhcmd-v1.3.1.zip",
+      "size": 61376447,
+      "sha256": "3099469b35cd65c97eca3a4c39917867032850f09bae71d6532565c4ebaee8ee",
+      "notes": "【界面与公式的手感修整】\n· **主窗口默认放大**：440×620 → **520×780**（老配置里的小窗口会自动放大一次，你自己拉大的不受影响）\n· **设置窗重做配色**：深底色 + 高对比文字，输入框描边清晰、聚焦高亮，「保存」用主色按钮；\n提示文字提亮到 9.5pt，不再灰底灰字\n· **「测试连接」不再影响保存**：改成后台线程，界面不卡，测多久都能随手点「保存」；\n失败提示也改成「可先保存后重试」，不再像是阻止你保存\n· **公式渲染更抗造**：`\\boxed{...}`、`\\dfrac`、`\\text{...}`、`\\operatorname` 这些 mathtext 不认的命令\n会自动剥壳/降级，**含中文的公式改用中文字体渲染**（以前会变成方块）；\n最后还有一层“纯文本兜底”，绝不会再把 LaTeX 源码直接摊在答案里",
+      "requires": "Windows 10/11 · Python 3.11+",
+      "url": "https://github.com/hanlinbachelor/fhcmd/releases/download/v1.3.1/fhcmd-v1.3.1.zip"
+    },
     {
       "version": "v1.3.0",
       "date": "2026-10-22",

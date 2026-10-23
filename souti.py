@@ -33,7 +33,7 @@ from PySide6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout,
                                QSizeGrip, QToolButton, QFrame, QMessageBox,
                                QSystemTrayIcon, QMenu, QDialog)
 
-__version__ = "1.3.0"
+__version__ = "1.3.1"
 APP_NAME = "反谋财害命器"
 
 BACKDROP_DOWNSCALE = 8          # 抓来的背景先缩小再放大 = 廉价高斯模糊
@@ -59,7 +59,7 @@ DEFAULT_CFG = {
     "max_tokens": 4000,
     "temperature": 0.2,
     "copy_on_capture": False,          # 截图后是否把图复制到剪贴板（默认关：不碰剪贴板）
-    "window": {"x": 820, "y": 60, "w": 440, "h": 620, "collapsed": False},
+    "window": {"x": 760, "y": 40, "w": 520, "h": 780, "collapsed": False},
 }
 
 # ---------------------------------------------------------------- 外观主题
@@ -218,6 +218,33 @@ def _fix_tex_args(s: str, cmd: str, nargs: int) -> str:
     return "".join(out)
 
 
+_STYLE_MACROS = (r"\displaystyle", r"\limits", r"\!", r"\,", r"\;", r"\:", r"\quad", r"\qquad")
+
+# mathtext 不认的包装类命令：剥掉外壳保留内容
+_UNSUPPORTED_WRAPS = (
+    r"\boxed", r"\text", r"\textbf", r"\mbox", r"\operatorname", r"\mathrm",
+    r"\textnormal", r"\emph", r"\underline", r"\overline", r"\cancel",
+)
+
+
+def strip_unsupported(s: str) -> str:
+    """剥掉 mathtext 不支持的外壳命令，只留里面的内容（\\boxed{x} → x）"""
+    changed = True
+    while changed:
+        changed = False
+        for cmd in _UNSUPPORTED_WRAPS:
+            out = _fix_tex_args(s, cmd, 1)
+            if out != s:
+                s, changed = out, True
+    for m in _STYLE_MACROS:
+        s = s.replace(m, "")
+    # 常见等价写法
+    s = s.replace(r"\dfrac", r"\frac").replace(r"\tfrac", r"\frac")
+    s = s.replace(r"\le", r"\leq").replace(r"\ge", r"\geq")
+    s = s.replace(r"\mathbb", r"\mathrm").replace(r"\bm", r"\mathbf")
+    return s
+
+
 def normalize_tex(s: str) -> str:
     s = _fix_tex_args(s, r"\frac", 2)
     s = _fix_tex_args(s, r"\sqrt", 1)
@@ -225,9 +252,21 @@ def normalize_tex(s: str) -> str:
     return s
 
 
+def plain_tex(s: str) -> str:
+    """最后的兜底：把无法渲染的公式降级成可读的纯文本"""
+    s = strip_unsupported(s)
+    s = re.sub(r"\\(?:left|right|big|Big|bigg|Bigg)[.(\[\]|]", "", s)
+    s = s.replace(r"\times", "×").replace(r"\cdot", "·").replace(r"\pm", "±")
+    s = s.replace(r"\leq", "≤").replace(r"\geq", "≥").replace(r"\neq", "≠")
+    s = s.replace(r"\infty", "∞").replace(r"\pi", "π").replace(r"\sqrt", "√")
+    s = re.sub(r"\\frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}", r"(\1)/(\2)", s)
+    s = re.sub(r"\\([A-Za-z]+)", r"\1", s)
+    return s.strip()
+
+
 def render_math(expr: str, color: str = "#efeae2", fontsize: float = 12.0):
-    """把一段 LaTeX 渲染成 PNG 文件，返回 (路径, 宽, 高)；失败返回 None
-       用 matplotlib 的 mathtext：不需要装 LaTeX，体积也可控"""
+    """把一段 LaTeX 渲染成 PNG，返回 (路径, 宽, 高)；渲染不了就一路降级，最后返回 None
+       阶梯：原样 → 剥掉 mathtext 不支持的命令 → 纯文本兜底"""
     expr = (expr or "").strip()
     if not expr:
         return None
@@ -240,21 +279,54 @@ def render_math(expr: str, color: str = "#efeae2", fontsize: float = 12.0):
         from matplotlib.figure import Figure
 
         MATH_DIR.mkdir(parents=True, exist_ok=True)
+        boxed = r"\boxed" in expr
         tex = normalize_tex(expr)
-        fig = Figure(figsize=(0.1, 0.1), dpi=200)
-        FigureCanvasAgg(fig)
-        fig.patch.set_alpha(0)
-        fig.text(0, 0, f"${tex}$", color=color, fontsize=fontsize)
-        name = hashlib.sha1(f"{tex}|{color}|{fontsize}".encode()).hexdigest()[:16] + ".png"
-        path = MATH_DIR / name
-        fig.savefig(path, format="png", transparent=True,
-                    bbox_inches="tight", pad_inches=0.04)
-        img = QImage(str(path))
-        if img.isNull():
-            return None
-        res = (str(path), img.width(), img.height())
-        _MATH_CACHE[key] = res
-        return res
+        # mathtext 的字体没有中文字形，\text{当 } 会变成方块 → 含中文时直接走纯文本渲染
+        has_cjk = re.search(r"[\u3400-\u9fff]", expr) is not None
+        cands = []
+        if has_cjk:
+            cands.append((plain_tex(expr), False))
+        cands.append((tex, True))
+        stripped = normalize_tex(strip_unsupported(tex))
+        if stripped != tex:
+            cands.append((stripped, True))
+        if not has_cjk:
+            cands.append((plain_tex(expr), False))
+
+        last_err = None
+        for body, is_math in cands:
+            if not body:
+                continue
+            try:
+                fig = Figure(figsize=(0.1, 0.1), dpi=200)
+                FigureCanvasAgg(fig)
+                fig.patch.set_alpha(0)
+                kw = {"color": color, "fontsize": fontsize}
+                if not is_math:                      # 纯文本兜底要用中文字体，否则中文变方块
+                    from matplotlib.font_manager import FontProperties
+                    for fn in ("msyh.ttc", "simhei.ttf", "simsun.ttc"):
+                        fp = Path(os.environ.get("WINDIR", r"C:\Windows")) / "Fonts" / fn
+                        if fp.exists():
+                            kw["fontproperties"] = FontProperties(fname=str(fp))
+                            break
+                t = fig.text(0, 0, f"${body}$" if is_math else body, **kw)
+                if boxed and is_math:                # 原本被 \boxed 包着 → 画个框
+                    t.set_bbox(dict(boxstyle="round,pad=0.35", facecolor="none",
+                                    edgecolor=color, linewidth=1.1))
+                name = hashlib.sha1(f"{body}|{is_math}|{color}|{fontsize}".encode()).hexdigest()[:16] + ".png"
+                path = MATH_DIR / name
+                fig.savefig(path, format="png", transparent=True,
+                            bbox_inches="tight", pad_inches=0.05)
+                img = QImage(str(path))
+                if img.isNull() or img.width() < 4:
+                    raise ValueError("渲染结果为空")
+                res = (str(path), img.width(), img.height())
+                _MATH_CACHE[key] = res
+                return res
+            except Exception as e:
+                last_err = e
+        print("数学公式渲染失败:", last_err)
+        return None
     except Exception as e:
         print("数学公式渲染失败:", e)
         return None
@@ -317,6 +389,14 @@ def load_config():
                     cfg[k] = v
     except Exception as e:
         print("config.json 读取失败，用默认配置:", e)
+    # 老版本默认 440x620，界面偏小：字号变大后自动放大一次（用户自己拉大的不动）
+    w = cfg.get("window") or {}
+    try:
+        if int(w.get("w", 0)) <= 460 or int(w.get("h", 0)) <= 640:
+            w["w"], w["h"] = 520, 780
+            cfg["window"] = w
+    except Exception:
+        pass
     return cfg
 
 
@@ -644,8 +724,8 @@ class SettingsDialog(QDialog):
         self.setWindowFlag(Qt.Dialog, True)
         self.setWindowTitle("设置 · 反谋财害命器")
         self.setModal(True)
-        self.setMinimumWidth(430)
-        self.setStyleSheet(parent.styleSheet() if parent else "")
+        self.setMinimumWidth(470)
+        self.setStyleSheet(self._qss())
         self._place_near(parent)
 
         form = QVBoxLayout(self)
@@ -654,7 +734,7 @@ class SettingsDialog(QDialog):
 
         tip = QLabel("填你自己的接口和 Key（程序不会上传，只存在本机 config.json）")
         tip.setWordWrap(True)
-        tip.setObjectName("status")
+        tip.setObjectName("hint")
         form.addWidget(tip)
 
         def row(label, widget, hint=None):
@@ -664,7 +744,7 @@ class SettingsDialog(QDialog):
             form.addWidget(widget)
             if hint:
                 h = QLabel(hint)
-                h.setObjectName("status")
+                h.setObjectName("hint")
                 h.setWordWrap(True)
                 form.addWidget(h)
 
@@ -681,6 +761,10 @@ class SettingsDialog(QDialog):
         self.ed_key.setPlaceholderText("sk-...")
         row("API Key api_key", self.ed_key, "在模型服务商后台创建；只保存在本机，不会发给我们")
 
+        for ed in (self.ed_base, self.ed_model, self.ed_key):
+            ed.setMinimumHeight(34)
+
+        form.addStretch(1)
         btns = QHBoxLayout()
         self.lb_test = QLabel("")
         self.lb_test.setObjectName("status")
@@ -697,6 +781,34 @@ class SettingsDialog(QDialog):
         b_save.clicked.connect(self.save)
         btns.addWidget(b_save)
         form.addLayout(btns)
+
+    # ---------- 独立配色：设置窗不跟着玻璃主题走，保证对比度
+    def _qss(self) -> str:
+        return """
+        QDialog { background: #1b2129; }
+        QLabel { color: #eaf1f8; font-family: "Noto Sans SC"; font-size: 10.5pt; }
+        QLabel#title { color: #f7fbff; font-size: 10.5pt; font-weight: 600; }
+        QLabel#status { color: #d3e2f0; font-size: 9.5pt; }
+        QLabel#hint { color: #d3e2f0; font-size: 9.5pt; }
+        QLineEdit {
+            background: #10151b; color: #f4f8fc;
+            border: 1px solid #3a4753; border-radius: 7px;
+            padding: 8px 10px; font-size: 10.5pt;
+            selection-background-color: #2f6f8f;
+        }
+        QLineEdit:focus { border: 1px solid #7fb4d4; background: #0d1217; }
+        QLineEdit::placeholder { color: #6f8497; }
+        QPushButton {
+            background: #2a333d; color: #eaf1f8;
+            border: 1px solid #46535f; border-radius: 7px;
+            padding: 7px 16px; font-size: 10pt; min-width: 74px;
+        }
+        QPushButton:hover { background: #354150; border-color: #6d8296; }
+        QPushButton:default {
+            background: #7fb4d4; color: #0f1720; border: 1px solid #9ccbe6; font-weight: 700;
+        }
+        QPushButton:default:hover { background: #93c6e2; }
+        """
 
     # ---------- 位置：尽量放在浮窗左侧空地，放不下就居中
     def _place_near(self, parent):
@@ -734,38 +846,55 @@ class SettingsDialog(QDialog):
     def save(self):
         self._collect()
         if not self.cfg["api_base"] or not self.cfg["model"]:
-            self.lb_test.setText("接口地址和模型不能为空")
+            self.lb_test.setText("接口地址和模型填一下就能保存")
             return
         save_config(self.cfg)
         self.accept()
 
     def test(self):
+        """测试连接放在后台线程跑：不阻塞界面，也绝不影响「保存」"""
         self._collect()
-        if not self.cfg["api_key"]:
-            self.lb_test.setText("先填 Key 再测")
+        if not self.cfg.get("api_key"):
+            self.lb_test.setText("还没填 Key；也可以先保存，之后再测")
             return
-        self.lb_test.setText("测试中…")
-        QApplication.setOverrideCursor(Qt.WaitCursor)
+        self.lb_test.setText("测试中…（不影响保存，随时可以点保存）")
+        if getattr(self, "_t", None) is not None and self._t.isRunning():
+            return
+        self._t = ConnTestThread(self.cfg["api_base"], self.cfg["api_key"], self.cfg["model"])
+        self._t.done.connect(self._on_tested)
+        self._t.start()
+
+    def _on_tested(self, ok, msg):
+        self.lb_test.setText(msg)
+
+
+class ConnTestThread(QThread):
+    """后台测连接：界面不卡，也不影响保存"""
+    done = Signal(bool, str)
+
+    def __init__(self, base, key, model):
+        super().__init__()
+        self.base, self.key, self.model = base, key, model
+
+    def run(self):
         try:
             r = requests.post(
-                self.cfg["api_base"].rstrip("/") + "/chat/completions",
-                headers={"Authorization": f"Bearer {self.cfg['api_key']}",
+                self.base.rstrip("/") + "/chat/completions",
+                headers={"Authorization": f"Bearer {self.key}",
                          "Content-Type": "application/json"},
-                json={"model": self.cfg["model"], "max_tokens": 8,
+                json={"model": self.model, "max_tokens": 8,
                       "messages": [{"role": "user", "content": "ping"}]},
                 timeout=20)
             if r.status_code == 200:
-                self.lb_test.setText("✅ 连接正常，可以保存了")
+                self.done.emit(True, "✓ 连接正常（保存随时可以点）")
             elif r.status_code in (401, 403):
-                self.lb_test.setText(f"❌ Key 不对或无权限（{r.status_code}）")
+                self.done.emit(False, f"连接受限（{r.status_code}）：Key 可能不对；仍可先保存")
             elif r.status_code == 402:
-                self.lb_test.setText("❌ 余额不足（402）")
+                self.done.emit(False, "余额不足（402）；仍可先保存")
             else:
-                self.lb_test.setText(f"⚠ 服务返回 {r.status_code}：{r.text[:60]}")
+                self.done.emit(False, f"服务返回 {r.status_code}；可先保存后重试")
         except Exception as e:
-            self.lb_test.setText(f"❌ 连不上：{type(e).__name__}")
-        finally:
-            QApplication.restoreOverrideCursor()
+            self.done.emit(False, f"这次没连上（{type(e).__name__}）；可先保存后重试")
 
 
 class HotkeyThread(QThread):
