@@ -33,7 +33,7 @@ from PySide6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout,
                                QSizeGrip, QToolButton, QFrame, QMessageBox,
                                QSystemTrayIcon, QMenu, QDialog)
 
-__version__ = "1.3.1"
+__version__ = "1.3.2"
 APP_NAME = "反谋财害命器"
 
 BACKDROP_DOWNSCALE = 8          # 抓来的背景先缩小再放大 = 廉价高斯模糊
@@ -765,6 +765,12 @@ class SettingsDialog(QDialog):
             ed.setMinimumHeight(34)
 
         form.addStretch(1)
+
+        ver_lab = QLabel(f"版本 v{__version__}　·　当前模型 {self.cfg.get('model', '')}")
+        ver_lab.setObjectName("hint")
+        ver_lab.setWordWrap(True)
+        form.addWidget(ver_lab)
+
         btns = QHBoxLayout()
         self.lb_test = QLabel("")
         self.lb_test.setObjectName("status")
@@ -1899,7 +1905,31 @@ def _install_crash_log():
     sys.excepthook = hook
 
 
+def _selftest_math() -> int:
+    """`反谋财害命器.exe --selftest-math`：在真实运行环境里验证公式渲染，结果写到 exe 旁边"""
+    log_path = APP_DIR / "selftest_math.txt"
+    lines = [f"version = {__version__}", f"frozen = {getattr(sys, 'frozen', False)}"]
+    ok = 0
+    for e in (r"\sqrt{e}=e^{\frac{1}{2}}", r"\boxed{f_{\max}=3}", r"当 x>0 时 \sqrt{x^2}=x"):
+        r = render_math(e, "#ffffff", 13)
+        if r:
+            ok += 1
+            lines.append(f"OK   {e} -> {r[1]}x{r[2]}")
+        else:
+            lines.append(f"FAIL {e}")
+    try:
+        import matplotlib
+        lines.append(f"matplotlib = {matplotlib.__version__}")
+    except Exception as exc:
+        lines.append(f"matplotlib 导入失败: {exc}")
+    lines.append(f"结果: {ok}/3")
+    log_path.write_text("\n".join(lines), encoding="utf-8")
+    return 0 if ok == 3 else 1
+
+
 def main():
+    if "--selftest-math" in sys.argv:
+        sys.exit(_selftest_math())
     _install_crash_log()
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)   # 收成球/进托盘时不能退出

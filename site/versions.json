@@ -1,5 +1,5 @@
 {
-  "latest": "v1.3.1",
+  "latest": "v1.3.2",
   "display_names": {
     "fhcmd-v1.0.0.zip": "反谋财害命器-v1.0.0.zip",
     "fhcmd-v1.1.0.zip": "反谋财害命器-v1.1.0.zip",
@@ -9,9 +9,20 @@
     "fhcmd-v1.2.1.zip": "反谋财害命器-v1.2.1.zip",
     "fhcmd-v1.2.2.zip": "反谋财害命器-v1.2.2.zip",
     "fhcmd-v1.3.0.zip": "反谋财害命器-v1.3.0.zip",
-    "fhcmd-v1.3.1.zip": "反谋财害命器-v1.3.1.zip"
+    "fhcmd-v1.3.1.zip": "反谋财害命器-v1.3.1.zip",
+    "fhcmd-v1.3.2.zip": "反谋财害命器-v1.3.2.zip"
   },
   "versions": [
+    {
+      "version": "v1.3.2",
+      "date": "2026-10-23",
+      "file": "fhcmd-v1.3.2.zip",
+      "size": 67710496,
+      "sha256": "4160cf558b8bff831f045cfb9776fc17c8c913269692f817e9173549c9413c83",
+      "notes": "【修复：打包版的公式渲染根本没生效（v1.3.1 的真 bug）】\n· 根因：打包时为瘦身加了 `--exclude-module PIL`，但 **matplotlib 依赖 PIL**（`matplotlib.colors` 直接 import），\n于是 exe 里一 `import matplotlib` 就 `ModuleNotFoundError`，渲染静默失败 → 答案里直接摊出 LaTeX 源码\n· 修正：PIL 重新打进包；其余安全裁剪保留（Qt 多余模块、matplotlib 无关后端、测试包）\n· 新增 `反谋财害命器.exe --selftest-math`：在**真实打包环境**里渲染 3 个公式并把结果写到 exe 旁边\n的 `selftest_math.txt`，以后每次发版都能用一条命令验证渲染是否可用（这次就是靠它定位的）\n【新增：设置窗里显示版本】\n· 设置窗底部显示「版本 vX.Y.Z · 当前模型 xxx」，不用再靠状态栏猜自己装的是哪一版",
+      "requires": "Windows 10/11 · Python 3.11+",
+      "url": "https://github.com/hanlinbachelor/fhcmd/releases/download/v1.3.2/fhcmd-v1.3.2.zip"
+    },
     {
       "version": "v1.3.1",
       "date": "2026-10-23",

@@ -9,6 +9,18 @@
 
 ---
 
+## v1.3.2 — 2026-10-21
+
+**修复：打包版的公式渲染根本没生效（v1.3.1 的真 bug）**
+- 根因：打包时为瘦身加了 `--exclude-module PIL`，但 **matplotlib 依赖 PIL**（`matplotlib.colors` 直接 import），
+  于是 exe 里一 `import matplotlib` 就 `ModuleNotFoundError`，渲染静默失败 → 答案里直接摊出 LaTeX 源码
+- 修正：PIL 重新打进包；其余安全裁剪保留（Qt 多余模块、matplotlib 无关后端、测试包）
+- 新增 `反谋财害命器.exe --selftest-math`：在**真实打包环境**里渲染 3 个公式并把结果写到 exe 旁边
+  的 `selftest_math.txt`，以后每次发版都能用一条命令验证渲染是否可用（这次就是靠它定位的）
+
+**新增：设置窗里显示版本**
+- 设置窗底部显示「版本 vX.Y.Z · 当前模型 xxx」，不用再靠状态栏猜自己装的是哪一版
+
 ## v1.3.1 — 2026-10-21
 
 **界面与公式的手感修整**
