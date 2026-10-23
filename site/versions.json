@@ -1,11 +1,22 @@
 {
-  "latest": "v1.3.3",
+  "latest": "v1.3.4",
   "display_names": {
     "fhcmd-v1.2.2.zip": "反谋财害命器-v1.2.2.zip",
     "fhcmd-v1.3.2.zip": "反谋财害命器-v1.3.2.zip",
-    "fhcmd-v1.3.3.zip": "反谋财害命器-v1.3.3.zip"
+    "fhcmd-v1.3.3.zip": "反谋财害命器-v1.3.3.zip",
+    "fhcmd-v1.3.4.zip": "反谋财害命器-v1.3.4.zip"
   },
   "versions": [
+    {
+      "version": "v1.3.4",
+      "date": "2026-10-23",
+      "file": "fhcmd-v1.3.4.zip",
+      "size": 70824280,
+      "sha256": "94cc3f01d29b46355dc78f748129f8a057a80fcec5eef88f6523a8f1b023bcf2",
+      "notes": "【新增：检查更新（只提示，不自动替换）】\n· 启动 6 秒后静默检查一次：先读站点 versions.json，失败再退到 GitHub API；失败静默，不打扰\n· 有新版本时状态栏显示「发现新版本 vX · 去下载」，点链接直接开下载页\n· 右键菜单新增「检查更新…」：明确告诉你「已是最新」或「检查失败（原因）」",
+      "requires": "Windows 10/11 · Python 3.11+",
+      "url": "https://github.com/hanlinbachelor/fhcmd/releases/download/v1.3.4/fhcmd-v1.3.4.zip"
+    },
     {
       "version": "v1.3.3",
       "date": "2026-10-23",
