@@ -33,7 +33,7 @@ from PySide6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout,
                                QSizeGrip, QToolButton, QFrame, QMessageBox,
                                QSystemTrayIcon, QMenu, QDialog)
 
-__version__ = "1.3.4"
+__version__ = "1.3.5"
 APP_NAME = "反谋财害命器"
 UPDATE_URL = "https://hanlinbachelor.github.io/fhcmd/versions.json"
 UPDATE_PAGE = "https://hanlinbachelor.github.io/fhcmd/"
@@ -49,7 +49,9 @@ def _app_dir() -> Path:
 
 
 APP_DIR = _app_dir()
-CONFIG_PATH = APP_DIR / "config.json"
+CONFIG_DIR = Path(os.environ.get("LOCALAPPDATA") or (Path.home() / "AppData" / "Local")) / "fhcmd"
+CONFIG_PATH = CONFIG_DIR / "config.json"
+LEGACY_CONFIG = APP_DIR / "config.json"      # 旧版本放在 exe 旁边，首次启动自动搬过来
 HISTORY_DIR = APP_DIR / "history"
 
 DEFAULT_CFG = {
@@ -554,6 +556,12 @@ def rich_html(text: str, color: str, fontsize: float = 12.0) -> str:
 def load_config():
     cfg = json.loads(json.dumps(DEFAULT_CFG))
     try:
+        if (not CONFIG_PATH.exists()) and LEGACY_CONFIG.exists():
+            try:
+                CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+                CONFIG_PATH.write_bytes(LEGACY_CONFIG.read_bytes())
+            except Exception as e:
+                print("配置迁移失败", e)
         if CONFIG_PATH.exists():
             user = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
             for k, v in user.items():
@@ -576,6 +584,7 @@ def load_config():
 
 def save_config(cfg):
     try:
+        CONFIG_DIR.mkdir(parents=True, exist_ok=True)
         CONFIG_PATH.write_text(json.dumps(cfg, ensure_ascii=False, indent=2), encoding="utf-8")
     except Exception as e:
         print("config 保存失败:", e)

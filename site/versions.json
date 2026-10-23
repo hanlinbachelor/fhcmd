@@ -1,12 +1,23 @@
 {
-  "latest": "v1.3.4",
+  "latest": "v1.3.5",
   "display_names": {
     "fhcmd-v1.2.2.zip": "反谋财害命器-v1.2.2.zip",
     "fhcmd-v1.3.2.zip": "反谋财害命器-v1.3.2.zip",
     "fhcmd-v1.3.3.zip": "反谋财害命器-v1.3.3.zip",
-    "fhcmd-v1.3.4.zip": "反谋财害命器-v1.3.4.zip"
+    "fhcmd-v1.3.4.zip": "反谋财害命器-v1.3.4.zip",
+    "fhcmd-v1.3.5.zip": "反谋财害命器-v1.3.5.zip"
   },
   "versions": [
+    {
+      "version": "v1.3.5",
+      "date": "2026-10-23",
+      "file": "fhcmd-v1.3.5.zip",
+      "size": 70824824,
+      "sha256": "47ebf4ace6ef1926f322b1f67e75935b41a7dcab554c450512ebecf22efb654d",
+      "notes": "【更新体验：配置搬家，换 exe 不再丢设置】\n· 配置改存 （Windows 用户级目录），**首次启动自动从 exe 旁边的旧配置迁移**，老用户无感\n· 以后更新只需「解压新包 → 双击新 exe」，不管解压到哪个文件夹，接口/key/主题/窗口尺寸都自动继承",
+      "requires": "Windows 10/11 · Python 3.11+",
+      "url": "https://github.com/hanlinbachelor/fhcmd/releases/download/v1.3.5/fhcmd-v1.3.5.zip"
+    },
     {
       "version": "v1.3.4",
       "date": "2026-10-23",
