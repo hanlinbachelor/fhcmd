@@ -33,7 +33,7 @@ from PySide6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout,
                                QSizeGrip, QToolButton, QFrame, QMessageBox,
                                QSystemTrayIcon, QMenu, QDialog)
 
-__version__ = "1.3.2"
+__version__ = "1.3.3"
 APP_NAME = "反谋财害命器"
 
 BACKDROP_DOWNSCALE = 8          # 抓来的背景先缩小再放大 = 廉价高斯模糊
@@ -67,6 +67,7 @@ DEFAULT_CFG = {
 THEMES = {
     "laser": {
         "label": "镭射",
+        "light": False,
         "desc": "青蓝霓虹 · 深空黑，截图准星也是这一套色",
         "accent": (80, 235, 255),
         "font_ui": "Noto Sans SC",
@@ -100,41 +101,91 @@ THEMES = {
         "ball_inner": (80, 235, 255, 110),
         "ball_cross": (80, 235, 255, 255),
     },
-    "morandi": {
-        "label": "液态玻璃",
-        "desc": "低饱和灰调 · 燕麦白字，背景真模糊 + 顶部高光 + 内缘亮边",
-        "accent": (169, 192, 207),
+    "qianli": {
+        "label": "千里江山",
+        "desc": "绢本设色 · 石青 / 石绿 / 赭石，底衬远山",
+        "accent": (47, 169, 124),
+        "light": True,
+        "paper": True,
+        "feather": 18,
+        "paper_alpha": 0.30,
+        "bg_image": "assets/qianli_bg.jpg",
+        "paper_veil": (238, 229, 205, 168),
+        "hills": False,
         "font_ui": "Noto Sans SC",
         "font_body": "Noto Sans SC",
-        "ans_bg": "rgba(169, 192, 207, 58)",
-        "ans_bg_solid": "#2c343d",
-        "ans_border": "rgba(200, 216, 228, 170)",
-        "ans_tag": "#dde7ee",
-        "card_fill": (48, 52, 60, 208),          # 盖在"已模糊的背影"上的灰调色
-        "card_border": (255, 255, 255, 58),
+        "ans_bg": "rgba(31, 127, 168, 36)",
+        "ans_bg_solid": "#E6EFE6",
+        "ans_border": "rgba(31, 127, 168, 180)",
+        "ans_tag": "#0F5E4A",
+        "sec_tags": {"题目": "#1F7FA8", "答案": "#1C7A5A", "解析": "#A9682F", "考点": "#12506B"},
+        "card_fill": (214, 193, 147, 250),
+        "card_border": (108, 84, 46, 180),
         "glass": True,
-        "gloss_top": 40,                        # 顶部高光不透明度
-        "edge": 112,                             # 内缘亮边不透明度
-        "panel_bg": "qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(42,46,54,238), stop:0.45 rgba(28,32,39,242), stop:1 rgba(20,23,29,246))",
-        "panel_border": "rgba(255,255,255,40)",
-        "text": "#efeae2",
-        "title": "#f8f4ed",
-        "subtext": "#d0c9be",
-        "placeholder": "#d8d1c7",
-        "btn_bg": "rgba(156, 170, 182, 160)",
-        "btn_hover": "rgba(180, 194, 206, 200)",
-        "btn_press": "rgba(136, 149, 161, 215)",
-        "btn_disabled": "rgba(96, 100, 106, 130)",
-        "btn_text": "#faf7f2",
-        "focus_border": "rgba(200, 214, 224, 185)",
-        "selection": "#7d93a3",
-        "menu_bg": "#3a3e45",
-        "menu_sel": "rgba(156,170,182,195)",
-        "menu_border": "rgba(255,255,255,66)",
-        "ball_fill": (50, 54, 61, 238),
-        "ball_ring": (176, 198, 212, 235),
-        "ball_inner": (176, 198, 212, 90),
-        "ball_cross": (234, 230, 222, 255),
+        "gloss_top": 34,
+        "edge": 96,
+        "panel_bg": "qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(246,239,219,120), stop:0.5 rgba(240,231,208,104), stop:1 rgba(233,222,196,132))",
+        "panel_border": "rgba(108, 84, 46, 86)",
+        "scroll_handle": "rgba(108, 84, 46, 70)",
+        "scroll_handle_hover": "rgba(108, 84, 46, 120)",
+        "text": "#2A2F26",
+        "title": "#1C211A",
+        "subtext": "#565240",
+        "placeholder": "#847C63",
+        "btn_bg": "rgba(47, 169, 124, 225)",
+        "btn_hover": "rgba(34, 194, 140, 240)",
+        "btn_press": "rgba(24, 150, 108, 248)",
+        "btn_disabled": "rgba(186, 176, 150, 175)",
+        "btn_text": "#F4FBF7",
+        "focus_border": "rgba(18, 80, 107, 210)",
+        "selection": "rgba(47, 169, 124, 150)",
+        "menu_bg": "rgba(226,210,170,238)",
+        "field_bg": "rgba(255, 251, 240, 96)",
+        "field_border": "rgba(108, 84, 46, 120)",
+        "menu_sel": "rgba(47, 169, 124, 205)",
+        "menu_border": "rgba(108, 84, 46, 150)",
+        "ball_fill": (214, 193, 147, 250),
+        "ball_ring": (31, 127, 168, 245),
+        "ball_inner": (47, 169, 124, 130),
+        "ball_cross": (18, 80, 107, 255),
+    },
+    "morandi": {
+        "label": "奶油",
+        "desc": "奶油白 · 牛奶玻璃，配莫兰迪绿 / 雾蓝 / 藕粉 / 淡紫",
+        "accent": (143, 191, 168),
+        "light": True,
+        "font_ui": "Noto Sans SC",
+        "font_body": "Noto Sans SC",
+        "ans_bg": "rgba(143, 191, 168, 44)",
+        "ans_bg_solid": "#EDF6F0",
+        "ans_border": "rgba(143, 191, 168, 200)",
+        "ans_tag": "#3F7A5E",
+        "sec_tags": {"题目": "#5E86AD", "答案": "#3F7A5E", "解析": "#A8738C", "考点": "#7C6CA8"},
+        "card_fill": (252, 248, 241, 244),
+        "card_border": (176, 200, 186, 150),
+        "glass": True,
+        "gloss_top": 70,
+        "edge": 150,
+        "panel_bg": "qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(255,252,246,238), stop:0.45 rgba(250,245,236,242), stop:1 rgba(243,238,229,246))",
+        "panel_border": "rgba(255,255,255,190)",
+        "text": "#3B3A36",
+        "title": "#2A2925",
+        "subtext": "#6E6A62",
+        "placeholder": "#9A948A",
+        "btn_bg": "rgba(168, 205, 188, 210)",
+        "btn_hover": "rgba(146, 194, 172, 228)",
+        "btn_press": "rgba(122, 176, 152, 240)",
+        "btn_disabled": "rgba(210, 208, 202, 170)",
+        "btn_text": "#23423A",
+        "focus_border": "rgba(122, 176, 152, 210)",
+        "selection": "rgba(168, 205, 188, 180)",
+        "menu_bg": "#FCF8F0",
+        "menu_sel": "rgba(168, 205, 188, 225)",
+        "menu_border": "rgba(143, 191, 168, 150)",
+        "ball_fill": (252, 248, 241, 246),
+        "ball_ring": (143, 191, 168, 240),
+        "ball_inner": (224, 168, 188, 120),
+        "ball_cross": (94, 134, 173, 255),
     },
 }
 
@@ -287,10 +338,28 @@ def plain_tex(s: str) -> str:
     return " ".join(s.split())
 
 
+def _log_math_fail(expr: str, err):
+    """记下没渲染成功的公式，方便排查（写在 exe/源码同目录）"""
+    try:
+        with open(APP_DIR / "math_fail.log", "a", encoding="utf-8") as f:
+            f.write("--- %s ---\n" % time.strftime("%Y-%m-%d %H:%M:%S"))
+            f.write("expr: %r\n" % (expr,))
+            f.write("err : %s: %s\n" % (type(err).__name__, err))
+    except Exception:
+        pass
+
+
+
 def render_math(expr: str, color: str = "#efeae2", fontsize: float = 12.0):
     """把一段 LaTeX 渲染成 PNG，返回 (路径, 宽, 高)；渲染不了就一路降级，最后返回 None
        阶梯：原样 → 剥掉 mathtext 不支持的命令 → 纯文本兜底"""
-    expr = (expr or "").strip()
+    expr = re.sub(r"\s+", " ", (expr or "").strip())     # 跨行公式先压平
+    expr = expr.replace("<br>", " ").replace("&nbsp;", " ")
+    # 公式里夹中文（	ext{即 }）时，把中文段整段去掉再按数学渲染，
+    # 否则 mathtext 没有中文字形，会退化成难看的纯文本
+    if re.search(r"[㐀-鿿]", expr):
+        expr = re.sub(r"\\(?:text|mbox|mathrm|textbf)\s*\{[^{}]*[一-鿿][^{}]*\}", " ", expr)
+        expr = re.sub(r"[一-鿿]+", " ", expr).strip()
     if not expr:
         return None
     key = (expr, color, fontsize)
@@ -349,10 +418,28 @@ def render_math(expr: str, color: str = "#efeae2", fontsize: float = 12.0):
             except Exception as e:
                 last_err = e
         print("数学公式渲染失败:", last_err)
+        _log_math_fail(expr, last_err if last_err else RuntimeError("未知"))
         return None
     except Exception as e:
         print("数学公式渲染失败:", e)
+        _log_math_fail(expr, e)
         return None
+
+
+
+def log_latex_leaks(tag, html):
+    """把渲染后仍留在文字里的 LaTeX 片段记进日志（这些是“没被识别成公式”的漏网）"""
+    plain = re.sub(r"<[^>]+>", " ", html or "")
+    hits = re.findall(r"\\[a-zA-Z]{2,}|\$[^$\n]{0,80}\$?", plain)
+    if not hits:
+        return
+    try:
+        with open(APP_DIR / "math_fail.log", "a", encoding="utf-8") as f:
+            f.write("--- %s LEAK [%s] ---\n" % (time.strftime("%H:%M:%S"), tag))
+            for h in hits[:12]:
+                f.write("  %r\n" % h)
+    except Exception:
+        pass
 
 
 _MATH_RE = re.compile(r"\$\$(.+?)\$\$|\$(.+?)\$|\\\[(.+?)\\\]|\\\((.+?)\\\)", re.S)
@@ -361,34 +448,9 @@ _MATH_RE = re.compile(r"\$\$(.+?)\$\$|\$(.+?)\$|\\\[(.+?)\\\]|\\\((.+?)\\\)", re
 _CJK_TEXT_RE = re.compile(r"\\(?:text|mbox|mathrm|textbf)\s*\{([^{}]*[\u3400-\u9fff][^{}]*)\}")
 
 
-def _math_img(m, color: str, fontsize: float = 12.0) -> str:
+def _math_img(m, color, fontsize=12.0):
+    """把一条公式渲染成 img 标签（含中文的公式交给 render_math 去掉中文后整体渲染）"""
     expr = m.group(1) or m.group(2) or m.group(3) or m.group(4) or ""
-    # 公式里夹中文（\text{当 } 之类）：把中文拆出来当普通文字，其余照常渲染成公式图
-    if _CJK_TEXT_RE.search(expr):
-        parts, pos = [], 0
-        for cm in _CJK_TEXT_RE.finditer(expr):
-            parts.append(("math", expr[pos:cm.start()]))
-            parts.append(("text", cm.group(1)))
-            pos = cm.end()
-        parts.append(("math", expr[pos:]))
-        html = []
-        for kind, body in parts:
-            if kind == "text":
-                html.append(f'<span style="color:{color}">{md_inline(body.strip())}</span>')
-                continue
-            body = body.strip().strip("$")
-            if not body or body in (",", "，", " "):
-                continue
-            r = render_math(body, color, fontsize)
-            if r:
-                p, w, h = r
-                url = "file:///" + p.replace("\\", "/")
-                html.append(f'<img src="{url}" width="{int(w * 0.48)}" height="{int(h * 0.48)}"'
-                            f' style="vertical-align:middle;">')
-            else:
-                html.append(f'<span style="color:{color}">{md_inline(plain_tex(body))}</span>')
-        return "".join(html)
-
     r = render_math(expr, color, fontsize)
     if not r:
         return f'<span style="color:{color}">{md_inline(plain_tex(expr))}</span>'
@@ -826,9 +888,10 @@ class RegionCatcher(QWidget):
 class SettingsDialog(QDialog):
     """设置接口地址 / 模型 / API Key —— 让拿到安装包的人自己填，不用手改 JSON"""
 
-    def __init__(self, parent, cfg):
+    def __init__(self, parent, cfg, theme=None):
         super().__init__(None)                       # 不挂父窗口：否则会被置顶的浮窗压住
         self.cfg = cfg
+        self.th = theme or THEMES.get(cfg.get("theme", "morandi"), THEMES["morandi"])
         self.setWindowFlag(Qt.WindowStaysOnTopHint, True)
         self.setWindowFlag(Qt.Dialog, True)
         self.setWindowTitle("设置 · 反谋财害命器")
@@ -897,32 +960,41 @@ class SettingsDialog(QDialog):
         btns.addWidget(b_save)
         form.addLayout(btns)
 
-    # ---------- 独立配色：设置窗不跟着玻璃主题走，保证对比度
+    # ---------- 配色跟随主题（液态玻璃=暖白 + 莫兰迪绿；镭射=深空黑 + 青蓝）
     def _qss(self) -> str:
-        return """
-        QDialog { background: #1b2129; }
-        QLabel { color: #eaf1f8; font-family: "Noto Sans SC"; font-size: 10.5pt; }
-        QLabel#title { color: #f7fbff; font-size: 10.5pt; font-weight: 600; }
-        QLabel#status { color: #d3e2f0; font-size: 9.5pt; }
-        QLabel#hint { color: #d3e2f0; font-size: 9.5pt; }
-        QLineEdit {
-            background: #10151b; color: #f4f8fc;
-            border: 1px solid #3a4753; border-radius: 7px;
+        t = self.th
+        light = bool(t.get("light", False))
+        bg = "#FBFAF6" if light else "#1C1F25"
+        field = "#FFFFFF" if light else "#23272E"
+        field_border = "#CDD8D2" if light else "#3B434D"
+        hint = t.get("subtext", "#5F6B78")
+        accent = t.get("accent", (143, 191, 168))
+        acc = f"rgb({accent[0]},{accent[1]},{accent[2]})" if isinstance(accent, tuple) else "#8FBFA8"
+        btn_bg = "#EAF1EC" if light else "rgba(127, 209, 168, 46)"
+        btn_border = "#C6D6CE" if light else "rgba(127, 209, 168, 110)"
+        fg = t.get("text", "#39404A")
+        fg_dark = "#20302A" if light else "#12261C"
+        return f"""
+        QDialog {{ background: {bg}; }}
+        QLabel {{ color: {fg}; font-family: "{t.get('font_body', 'Noto Sans SC')}"; font-size: 10.5pt; }}
+        QLabel#title {{ color: {t.get('title', fg)}; font-size: 10.5pt; font-weight: 600; }}
+        QLabel#status {{ color: {hint}; font-size: 9.5pt; }}
+        QLabel#hint {{ color: {hint}; font-size: 9.5pt; }}
+        QLineEdit {{
+            background: {field}; color: {fg};
+            border: 1px solid {field_border}; border-radius: 7px;
             padding: 8px 10px; font-size: 10.5pt;
-            selection-background-color: #2f6f8f;
-        }
-        QLineEdit:focus { border: 1px solid #7fb4d4; background: #0d1217; }
-        QLineEdit::placeholder { color: #6f8497; }
-        QPushButton {
-            background: #2a333d; color: #eaf1f8;
-            border: 1px solid #46535f; border-radius: 7px;
+        }}
+        QLineEdit:focus {{ border: 2px solid {acc}; padding: 7px 9px; }}
+        QPushButton {{
+            background: {btn_bg}; color: {fg};
+            border: 1px solid {btn_border}; border-radius: 8px;
             padding: 7px 16px; font-size: 10pt; min-width: 74px;
-        }
-        QPushButton:hover { background: #354150; border-color: #6d8296; }
-        QPushButton:default {
-            background: #7fb4d4; color: #0f1720; border: 1px solid #9ccbe6; font-weight: 700;
-        }
-        QPushButton:default:hover { background: #93c6e2; }
+        }}
+        QPushButton:hover {{ border-color: {acc}; }}
+        QPushButton:default {{
+            background: {acc}; color: {fg_dark}; border: 1px solid {acc}; font-weight: 700;
+        }}
         """
 
     # ---------- 位置：尽量放在浮窗左侧空地，放不下就居中
@@ -1068,6 +1140,7 @@ class DragBar(QWidget):
         self._off = None
         self.setFixedHeight(38)
         self.setCursor(Qt.SizeAllCursor)
+        self.th = None                                  # 由 FloatWindow 注入主题
 
     def mousePressEvent(self, e):
         if e.button() == Qt.LeftButton:
@@ -1200,7 +1273,7 @@ def enable_acrylic(hwnd, tint=(40, 44, 50), alpha=150):
         return False
 
 
-def set_round_region(win, radius=14, on=True):
+def set_round_region(win, radius=9, on=True):
     """把窗口本身裁成圆角（亚克力模糊只认矩形，不裁就会在圆角外露出四个直角）。
        on=False 时清掉 Region，恢复 Qt 的抗锯齿圆角。"""
     try:
@@ -1219,6 +1292,54 @@ def set_round_region(win, radius=14, on=True):
         return bool(u32.SetWindowRgn(hwnd, rgn, True))
     except Exception:
         return False
+
+
+
+_PAPER_TEX = None
+
+
+def paper_texture(size: int) -> QImage:
+    """泛黄宣纸的纤维纹理（固定随机种子，不会每次重画都不一样）"""
+    global _PAPER_TEX
+    size = max(256, int(size))
+    if _PAPER_TEX is not None and _PAPER_TEX.width() >= size:
+        return _PAPER_TEX
+    import random
+    rnd = random.Random(20261023)
+    img = QImage(size, size, QImage.Format_ARGB32)
+    img.fill(QColor(0, 0, 0, 0))
+    qp = QPainter(img)
+    for _ in range(size * 22):                      # 颗粒
+        x, y = rnd.randrange(size), rnd.randrange(size)
+        col = QColor(150, 120, 70, rnd.randint(6, 22)) if rnd.random() < 0.72             else QColor(255, 251, 236, rnd.randint(6, 20))
+        qp.setPen(QPen(col, 1))
+        qp.drawPoint(x, y)
+    for _ in range(size // 5):                       # 长纤维
+        x, y = rnd.randrange(size), rnd.randrange(size)
+        L = rnd.randint(8, 26)
+        qp.setPen(QPen(QColor(138, 108, 58, rnd.randint(5, 14)), 1))
+        qp.drawLine(x, y, min(size - 1, x + L), y + rnd.choice((-1, 0, 0, 1)))
+    qp.end()
+    _PAPER_TEX = img
+    return img
+
+
+
+_QIANLI_BG = None
+
+
+def qianli_background():
+    """加载原画底图（assets/qianli_bg.jpg），找不到就返回 None"""
+    global _QIANLI_BG
+    if _QIANLI_BG is not None:
+        return _QIANLI_BG
+    from PySide6.QtGui import QPixmap
+    for base in (APP_DIR, Path(getattr(sys, "_MEIPASS", APP_DIR))):
+        f = Path(base) / "assets" / "qianli_bg.jpg"
+        if f.exists():
+            _QIANLI_BG = QPixmap(str(f)).toImage()
+            break
+    return _QIANLI_BG
 
 
 class CardWidget(QWidget):
@@ -1247,7 +1368,8 @@ class CardWidget(QWidget):
         p.setRenderHint(QPainter.Antialiasing, True)
         r = QRectF(self.rect()).adjusted(0.6, 0.6, -0.6, -0.6)
         path = QPainterPath()
-        path.addRoundedRect(r, 14, 14)
+        rad = float(self.th.get('radius', 9))
+        path.addRoundedRect(r, rad, rad)
         # 玻璃底：真正被模糊过的背景（只在圆角路径内）
         if self.th.get("glass") and self.bg_img is not None and not self.bg_img.isNull():
             gp = self.mapToGlobal(QPoint(0, 0))
@@ -1260,6 +1382,53 @@ class CardWidget(QWidget):
             p.drawImage(QRectF(self.rect()), self.bg_img, src)
             p.restore()
         p.fillPath(path, QColor(*self.th["card_fill"]))
+        if self.th.get("bg_image"):                    # 千里江山：真·原画底图
+            img = qianli_background()
+            if img is not None and not img.isNull():
+                p.save()
+                p.setClipPath(path)
+                scaled = img.scaled(self.size(), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+                ox = (scaled.width() - self.width()) // 2
+                oy = (scaled.height() - self.height()) // 2
+                p.drawImage(QRectF(self.rect()), scaled, QRectF(ox, oy, self.width(), self.height()))
+                p.fillRect(self.rect(), QColor(*self.th.get("paper_veil", (240, 232, 210, 170))))
+                p.restore()
+        if self.th.get("paper"):                       # 千里江山：宣纸质感
+            p.save()
+            p.setClipPath(path)
+            p.setOpacity(float(self.th.get("paper_alpha", 0.5)))
+            tex = paper_texture(max(self.width(), self.height()))
+            p.drawImage(QRectF(self.rect()), tex, QRectF(0, 0, self.width(), self.height()))
+            p.restore()
+        if self.th.get("hills"):                        # 千里江山：底部远山
+            p.save()
+            p.setClipPath(path)
+            layers = [((18, 80, 107), 0.16, 0.10, 0.055),
+                      ((47, 169, 124), 0.13, 0.135, 0.045),
+                      ((169, 104, 47), 0.09, 0.175, 0.035)]
+            for (cr, cg, cb), alpha, base, amp in layers:
+                path2 = QPainterPath()
+                y0 = r.bottom() - r.height() * base
+                path2.moveTo(r.left(), r.bottom())
+                steps = 26
+                for i in range(steps + 1):
+                    xx = r.left() + r.width() * i / steps
+                    yy = y0 - abs(__import__("math").sin(i * 0.9 + base * 40)) * r.height() * amp
+                    path2.lineTo(xx, yy)
+                path2.lineTo(r.right(), r.bottom())
+                path2.closeSubpath()
+                p.fillPath(path2, QColor(cr, cg, cb, int(255 * alpha)))
+            p.restore()
+        if self.th.get("top_wash"):                     # 顶部青绿→石青淡彩
+            stops = self.th["top_wash"]
+            gw = QLinearGradient(r.left(), 0, r.right(), 0)
+            for i, (cr, cg, cb, ca) in enumerate(stops):
+                gw.setColorAt(i / max(1, len(stops) - 1), QColor(cr, cg, cb, ca))
+            p.save()
+            p.setClipPath(path)
+            band = QRectF(r.left(), r.top(), r.width(), min(96.0, r.height() * 0.18))
+            p.fillRect(band, gw)
+            p.restore()
         if self.th.get("glass"):
             g = QLinearGradient(0, r.top(), 0, r.top() + r.height() * 0.55)
             g.setColorAt(0.0, QColor(255, 255, 255, self.th["gloss_top"]))
@@ -1271,7 +1440,7 @@ class CardWidget(QWidget):
             g2.setColorAt(1.0, QColor(0, 0, 0, 48))
             p.fillPath(path, g2)
             inner = QPainterPath()
-            inner.addRoundedRect(r.adjusted(1.2, 1.2, -1.2, -1.2), 13, 13)
+            inner.addRoundedRect(r.adjusted(1.2, 1.2, -1.2, -1.2), max(4.0, rad - 1), max(4.0, rad - 1))
             p.setBrush(Qt.NoBrush)
             p.setPen(QPen(QColor(255, 255, 255, self.th["edge"]), 1.4))
             p.drawPath(inner)
@@ -1294,6 +1463,7 @@ class CardWidget(QWidget):
         p.setBrush(Qt.NoBrush)
         p.setPen(QPen(QColor(*self.th["card_border"]), 1))
         p.drawPath(path)
+
 
 
 def app_icon(accent=(80, 235, 255)) -> QIcon:
@@ -1364,6 +1534,7 @@ class FloatWindow(QWidget):
 
         # —— 标题栏
         self.bar = DragBar(self.card)
+        self.bar.th = self.th
         hb = QHBoxLayout(self.bar)
         hb.setContentsMargins(2, 0, 0, 0)
         hb.setSpacing(4)
@@ -1462,22 +1633,32 @@ class FloatWindow(QWidget):
         QLabel#ansbox {{
             background: {t['ans_bg']};
             border: 1px solid {t['ans_border']};
-            border-radius: 10px;
+            border-radius: 8px;
             padding: 9px 13px;
         }}
         QTextBrowser#view {{
-            background: {t['panel_bg']};
-            border: 1px solid {t['panel_border']};
-            border-radius: 10px;
+            background: {t.get('view_bg', t['panel_bg'])};
+            border: 1px solid {t.get('view_border', t['panel_border'])};
+            border-radius: 8px;
             color: {t['text']};
             font: 10.5pt "{fb}";
             padding: 9px 11px;
             selection-background-color: {t['selection']};
         }}
+        QScrollBar:vertical {{
+            background: transparent; width: 8px; margin: 2px 1px 2px 0;
+        }}
+        QScrollBar::handle:vertical {{
+            background: {t.get('scroll_handle', 'rgba(120, 120, 120, 90)')};
+            border-radius: 4px; min-height: 28px;
+        }}
+        QScrollBar::handle:vertical:hover {{ background: {t.get('scroll_handle_hover', 'rgba(120, 120, 120, 140)')}; }}
+        QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0; }}
+        QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ background: transparent; }}
         QLineEdit {{
-            background: {t['panel_bg']};
-            border: 1px solid {t['panel_border']};
-            border-radius: 10px;
+            background: {t.get('field_bg', t['panel_bg'])};
+            border: 1px solid {t.get('field_border', t['panel_border'])};
+            border-radius: 8px;
             color: {t['text']};
             font: 10.5pt "{fb}";
             padding: 6px 9px;
@@ -1504,7 +1685,7 @@ class FloatWindow(QWidget):
         t = getattr(self, "teff", None) or self.th
         return f"""
         QMenu {{ background: {t['menu_bg']}; color: {t['text']};
-                border: 1px solid {t['menu_border']}; border-radius: 8px; padding: 6px;
+                border: 1px solid {t['menu_border']}; border-radius: 7px; padding: 6px;
                 font: 9.5pt "{t['font_ui']}"; }}
         QMenu::item {{ padding: 6px 24px 6px 14px; border-radius: 5px; }}
         QMenu::item:selected {{ background: {t['menu_sel']}; }}
@@ -1947,6 +2128,12 @@ class FloatWindow(QWidget):
 
     def _present_answer(self, text):
         """答案单独做成大字高亮条；题目/解析/考点 用排好版的 HTML 显示"""
+        try:                                     # 把模型原文存一份，排查公式问题用
+            with open(APP_DIR / "last_answer.txt", "w", encoding="utf-8") as f:
+                f.write("===== %s =====\n" % time.strftime("%Y-%m-%d %H:%M:%S"))
+                f.write(text or "")
+        except Exception:
+            pass
         t = getattr(self, "teff", None) or self.th
         secs = split_sections(text)
         ans = (secs.get("答案") or "").strip()
@@ -1956,8 +2143,11 @@ class FloatWindow(QWidget):
         head = ""
         if ans:
             ans_html = rich_html(ans, t["text"], fontsize=15.0)
+            log_latex_leaks("答案", ans_html)
+            bar = t.get("sec_tags", {}).get("答案", t["ans_tag"])
             head = (f'<table width="100%" bgcolor="{t.get("ans_bg_solid", "#2c343d")}" '
-                    f'cellpadding="9" cellspacing="0" border="0"><tr><td>'
+                    f'cellpadding="9" cellspacing="0" border="0"><tr>'
+                    f'<td width="4" bgcolor="{bar}"></td><td>'
                     f'<span style="color:{t["ans_tag"]}; font-size:8.5pt;">答 案</span><br>'
                     f'<span style="color:{t["text"]}; font-size:15.5pt; font-weight:700;">{ans_html}</span>'
                     f'</td></tr></table><div style="height:12px"></div>')
@@ -1972,10 +2162,12 @@ class FloatWindow(QWidget):
             body = (secs.get(k) or "").strip()
             if not body or (k == "答案" and ans):
                 continue
+            body_html = rich_html(body, t["text"])
+            log_latex_leaks(k, body_html)          # 记录没被识别成公式的片段
             blocks.append(
                 f'<div style="color:{t["ans_tag"]}; font-size:9pt; margin:2px 0 4px 0;">{k}</div>'
                 f'<div style="color:{t["text"]}; font-size:10.5pt; margin:0 0 12px 0;">'
-                f'{rich_html(body, t["text"])}</div>')
+                f"{body_html}</div>")
         self.view.setHtml(
             f'<div style="font-family:\'{t["font_body"]}\'; line-height:158%;">'
             + head + "".join(blocks) + "</div>")
@@ -2016,7 +2208,7 @@ class FloatWindow(QWidget):
 
     def open_settings(self):
         """设置接口 / 模型 / Key，保存后立即生效（不用重启）"""
-        dlg = SettingsDialog(self, self.cfg)
+        dlg = SettingsDialog(self, self.cfg, self.th)
         dlg.raise_()
         dlg.activateWindow()
         res = dlg.exec()
@@ -2115,7 +2307,23 @@ def _selftest_math() -> int:
     return 0 if ok == 3 else 1
 
 
+def _fix_stdio():
+    """--windowed 打包后 sys.stdout/stderr 是 None，任何 print 都会抛异常 →
+       统一重定向到 app.log，既避免崩溃，又留下日志"""
+    if sys.stdout is not None and sys.stderr is not None:
+        return
+    try:
+        f = open(APP_DIR / "app.log", "a", buffering=1, encoding="utf-8")
+        if sys.stdout is None:
+            sys.stdout = f
+        if sys.stderr is None:
+            sys.stderr = f
+    except Exception:
+        pass
+
+
 def main():
+    _fix_stdio()
     if "--selftest-math" in sys.argv:
         sys.exit(_selftest_math())
     _install_crash_log()

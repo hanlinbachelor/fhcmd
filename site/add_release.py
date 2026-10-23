@@ -34,6 +34,7 @@ INCLUDE = [
     "requirements.txt",
     "启动反谋财害命器.bat",
     "icon.ico",
+    "assets/qianli_bg.jpg",
 ]
 
 
