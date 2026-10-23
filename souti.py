@@ -23,7 +23,7 @@ from pathlib import Path
 
 import requests
 from PySide6.QtCore import (Qt, QRect, QRectF, QPoint, QSize, QThread, Signal, QTimer,
-                            QBuffer, QIODevice, QByteArray, QStandardPaths)
+                            QBuffer, QIODevice, QByteArray, QStandardPaths, QEvent)
 from PySide6.QtGui import (QImage, QPixmap, QPainter, QColor, QPen, QFont,
                            QGuiApplication, QCursor, QPainterPath, QTextCursor,
                            QClipboard, QIcon, QKeySequence, QPalette,
@@ -59,7 +59,7 @@ DEFAULT_CFG = {
     "max_tokens": 4000,
     "temperature": 0.2,
     "copy_on_capture": False,          # 截图后是否把图复制到剪贴板（默认关：不碰剪贴板）
-    "window": {"x": 760, "y": 40, "w": 520, "h": 780, "collapsed": False},
+    "window": {"x": 780, "y": 60, "w": 470, "h": 660, "collapsed": False},
 }
 
 # ---------------------------------------------------------------- 外观主题
@@ -107,14 +107,15 @@ THEMES = {
         "font_ui": "Noto Sans SC",
         "font_body": "Noto Sans SC",
         "ans_bg": "rgba(169, 192, 207, 58)",
+        "ans_bg_solid": "#2c343d",
         "ans_border": "rgba(200, 216, 228, 170)",
         "ans_tag": "#dde7ee",
-        "card_fill": (48, 52, 60, 166),          # 盖在"已模糊的背影"上的灰调色
+        "card_fill": (48, 52, 60, 208),          # 盖在"已模糊的背影"上的灰调色
         "card_border": (255, 255, 255, 58),
         "glass": True,
         "gloss_top": 40,                        # 顶部高光不透明度
         "edge": 112,                             # 内缘亮边不透明度
-        "panel_bg": "qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(44,48,56,136), stop:0.45 rgba(26,29,35,120), stop:1 rgba(16,19,24,148))",
+        "panel_bg": "qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(42,46,54,238), stop:0.45 rgba(28,32,39,242), stop:1 rgba(20,23,29,246))",
         "panel_border": "rgba(255,255,255,40)",
         "text": "#efeae2",
         "title": "#f8f4ed",
@@ -255,13 +256,35 @@ def normalize_tex(s: str) -> str:
 def plain_tex(s: str) -> str:
     """最后的兜底：把无法渲染的公式降级成可读的纯文本"""
     s = strip_unsupported(s)
-    s = re.sub(r"\\(?:left|right|big|Big|bigg|Bigg)[.(\[\]|]", "", s)
-    s = s.replace(r"\times", "×").replace(r"\cdot", "·").replace(r"\pm", "±")
-    s = s.replace(r"\leq", "≤").replace(r"\geq", "≥").replace(r"\neq", "≠")
-    s = s.replace(r"\infty", "∞").replace(r"\pi", "π").replace(r"\sqrt", "√")
+    # 先去掉 left/right/big 系列，否则后面 le→≤ 的替换会把 left 啃成 ≤ft
+    s = re.sub(r"\\(?:left|right|middle)\s*[.(\[\]|]?", "", s)
+    s = re.sub(r"\\(?:big|Big|bigg|Bigg)\s*[.(\[\]|]?", "", s)
+    # 用词边界替换，避免 \le 命中 \leq 之后又命中 \left 之类
+    table = [
+        (r"\\to(?![a-zA-Z])", "→"), (r"\\sim(?![a-zA-Z])", "∼"),
+        (r"\\times(?![a-zA-Z])", "×"), (r"\\cdot(?![a-zA-Z])", "·"),
+        (r"\\pm(?![a-zA-Z])", "±"), (r"\\mp(?![a-zA-Z])", "∓"),
+        (r"\\leq?(?![a-zA-Z])", "≤"), (r"\\geq?(?![a-zA-Z])", "≥"),
+        (r"\\neq?(?![a-zA-Z])", "≠"), (r"\\approx(?![a-zA-Z])", "≈"),
+        (r"\\infty(?![a-zA-Z])", "∞"), (r"\\pi(?![a-zA-Z])", "π"),
+        (r"\\alpha(?![a-zA-Z])", "α"), (r"\\beta(?![a-zA-Z])", "β"),
+        (r"\\theta(?![a-zA-Z])", "θ"), (r"\\varphi(?![a-zA-Z])", "φ"),
+        (r"\\because(?![a-zA-Z])", "∵"), (r"\\therefore(?![a-zA-Z])", "∴"),
+        (r"\\in(?![a-zA-Z])", "∈"), (r"\\subset(?![a-zA-Z])", "⊂"),
+        (r"\\sum(?![a-zA-Z])", "Σ"), (r"\\int(?![a-zA-Z])", "∫"),
+    ]
+    for pat, rep in table:
+        s = re.sub(pat, rep, s)
+    s = re.sub(r"\\sqrt\s*\{([^{}]*)\}", r"√(\1)", s)
+    s = re.sub(r"\\sqrt(?![a-zA-Z])\s*", "√", s)
     s = re.sub(r"\\frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}", r"(\1)/(\2)", s)
-    s = re.sub(r"\\([A-Za-z]+)", r"\1", s)
-    return s.strip()
+    # 函数名保留（\tan → tan），不要整条删掉
+    s = re.sub(r"\\(sin|cos|tan|cot|sec|csc|arcsin|arccos|arctan|sinh|cosh|tanh|"
+               r"ln|log|lg|lim|exp|max|min|sup|inf|det|gcd)(?![a-zA-Z])", r"\1", s)
+    # 剩下的命令：去掉反斜杠但保留名字，避免丢信息
+    s = re.sub(r"\\([a-zA-Z]+)\s*", r"\1 ", s)
+    s = s.replace("{", "").replace("}", "").replace("\\", "")
+    return " ".join(s.split())
 
 
 def render_math(expr: str, color: str = "#efeae2", fontsize: float = 12.0):
@@ -335,11 +358,40 @@ def render_math(expr: str, color: str = "#efeae2", fontsize: float = 12.0):
 _MATH_RE = re.compile(r"\$\$(.+?)\$\$|\$(.+?)\$|\\\[(.+?)\\\]|\\\((.+?)\\\)", re.S)
 
 
+_CJK_TEXT_RE = re.compile(r"\\(?:text|mbox|mathrm|textbf)\s*\{([^{}]*[\u3400-\u9fff][^{}]*)\}")
+
+
 def _math_img(m, color: str, fontsize: float = 12.0) -> str:
     expr = m.group(1) or m.group(2) or m.group(3) or m.group(4) or ""
+    # 公式里夹中文（\text{当 } 之类）：把中文拆出来当普通文字，其余照常渲染成公式图
+    if _CJK_TEXT_RE.search(expr):
+        parts, pos = [], 0
+        for cm in _CJK_TEXT_RE.finditer(expr):
+            parts.append(("math", expr[pos:cm.start()]))
+            parts.append(("text", cm.group(1)))
+            pos = cm.end()
+        parts.append(("math", expr[pos:]))
+        html = []
+        for kind, body in parts:
+            if kind == "text":
+                html.append(f'<span style="color:{color}">{md_inline(body.strip())}</span>')
+                continue
+            body = body.strip().strip("$")
+            if not body or body in (",", "，", " "):
+                continue
+            r = render_math(body, color, fontsize)
+            if r:
+                p, w, h = r
+                url = "file:///" + p.replace("\\", "/")
+                html.append(f'<img src="{url}" width="{int(w * 0.48)}" height="{int(h * 0.48)}"'
+                            f' style="vertical-align:middle;">')
+            else:
+                html.append(f'<span style="color:{color}">{md_inline(plain_tex(body))}</span>')
+        return "".join(html)
+
     r = render_math(expr, color, fontsize)
     if not r:
-        return m.group(0)
+        return f'<span style="color:{color}">{md_inline(plain_tex(expr))}</span>'
     path, w, h = r
     url = "file:///" + path.replace("\\", "/")
     # 200dpi 出图，按 0.48 缩放贴近正文字号；vertical-align 让图片跟文字基线居中对齐
@@ -364,9 +416,66 @@ def _plain_html(s: str) -> str:
     return s
 
 
+_BARE_TEX = re.compile(r"\[a-zA-Z]+(?:\s*(?:\{[^{}]*\}|[A-Za-z0-9^_+\-=<>().,;:!|])*)+\s*")
+
+
+def autowrap_bare_tex(text: str) -> str:
+    """模型有时把公式裸着写（\lim_{x	o0}rac{1}{x}），这里自动补上 $...$ 让它们被渲染"""
+    if "\\" not in text:
+        return text
+    out, pos = [], 0
+    for m in _MATH_RE.finditer(text):
+        out.append(_wrap_bare(text[pos:m.start()]))
+        out.append(m.group(0))
+        pos = m.end()
+    out.append(_wrap_bare(text[pos:]))
+    return "".join(out)
+
+
+_LATEX_CHARS = set("\\{}^_+-=<>().,;:|/[]0123456789"
+                   "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ")
+
+
+def _wrap_bare(seg: str) -> str:
+    """把一段里裸着的 LaTeX（以反斜杠命令开头）包成 $...$；遇到中文就停"""
+    if "\\" not in seg:
+        return seg
+    out, i, n = [], 0, len(seg)
+    while i < n:
+        ch = seg[i]
+        if ch == "\\" and i + 1 < n and (seg[i + 1].isalpha() or seg[i + 1] in "{}()[]|"):
+            j = i
+            depth = 0
+            while j < n:
+                c = seg[j]
+                if c == "{":
+                    depth += 1
+                elif c == "}":
+                    depth -= 1
+                elif c not in _LATEX_CHARS:
+                    break
+                elif c == " " and depth == 0:
+                    # 空格后若紧跟中文/非公式字符，就在这里收尾
+                    nxt = seg[j + 1:j + 2]
+                    if not nxt or nxt not in _LATEX_CHARS:
+                        break
+                j += 1
+            body = seg[i:j].strip()
+            if len(body) > 2 and not re.search(r"[\u3400-\u9fff]", body):
+                out.append("$" + body + "$")
+                i = j
+                continue
+            out.append(ch)
+            i += 1
+            continue
+        out.append(ch)
+        i += 1
+    return "".join(out)
+
+
 def rich_html(text: str, color: str, fontsize: float = 12.0) -> str:
     """公式段渲染成图片，其余走 markdown + 上下标；顺序很重要（避免把 src 里的下划线当上下标）"""
-    text = text or ""
+    text = autowrap_bare_tex(text or "")
     out, pos = [], 0
     for m in _MATH_RE.finditer(text):
         out.append(_plain_html(text[pos:m.start()]))
@@ -393,7 +502,7 @@ def load_config():
     w = cfg.get("window") or {}
     try:
         if int(w.get("w", 0)) <= 460 or int(w.get("h", 0)) <= 640:
-            w["w"], w["h"] = 520, 780
+            w["w"], w["h"] = 470, 660
             cfg["window"] = w
     except Exception:
         pass
@@ -1245,6 +1354,8 @@ class FloatWindow(QWidget):
         self.th = THEMES[self.theme_name]
         self.card = CardWidget(self, self.th)
         self.card.setObjectName("card")
+        self.card.setMouseTracking(True)
+        self.card.installEventFilter(self)      # 无边框窗口：自己处理边缘拖拽缩放
         root.addWidget(self.card)
 
         v = QVBoxLayout(self.card)
@@ -1515,6 +1626,81 @@ class FloatWindow(QWidget):
         ver.setEnabled(False)
         return m
 
+    # ---------- 无边框窗口：拖四边/四角缩放
+    EDGE = 8
+    MIN_W, MIN_H = 360, 430
+
+    @staticmethod
+    def _cursor_for(e):
+        if e in (5, 10):
+            return Qt.SizeFDiagCursor
+        if e in (6, 9):
+            return Qt.SizeBDiagCursor
+        if e in (1, 2):
+            return Qt.SizeHorCursor
+        if e in (4, 8):
+            return Qt.SizeVerCursor
+        return None
+
+    def _edges_at(self, pos):
+        m, r = self.EDGE, self.rect()
+        e = 0
+        if pos.x() <= m:
+            e |= 1
+        if pos.x() >= r.width() - m:
+            e |= 2
+        if pos.y() <= m:
+            e |= 4
+        if pos.y() >= r.height() - m:
+            e |= 8
+        return e
+
+    def eventFilter(self, obj, ev):
+        if obj is getattr(self, "card", None) and getattr(self, "state", "") == "window":
+            t = ev.type()
+            if t == QEvent.MouseMove:
+                gp = ev.globalPosition().toPoint()
+                if getattr(self, "_rdrag", None):
+                    self._resize_to(gp)
+                    return True
+                e = self._edges_at(obj.mapTo(self, ev.position().toPoint()))
+                cur = self._cursor_for(e)
+                obj.setCursor(cur if cur else Qt.ArrowCursor)
+            elif t == QEvent.MouseButtonPress and ev.button() == Qt.LeftButton:
+                e = self._edges_at(obj.mapTo(self, ev.position().toPoint()))
+                if e:
+                    self._rdrag = (e, ev.globalPosition().toPoint(), self.geometry())
+                    return True
+            elif t == QEvent.MouseButtonRelease and getattr(self, "_rdrag", None):
+                self._rdrag = None
+                self._remember_geometry()
+                save_config(self.cfg)
+                return True
+        return super().eventFilter(obj, ev)
+
+    def _resize_to(self, gp):
+        e, start, g = self._rdrag
+        dx, dy = gp.x() - start.x(), gp.y() - start.y()
+        x, y, w, h = g.x(), g.y(), g.width(), g.height()
+        if e & 1:
+            x += dx; w -= dx
+        if e & 2:
+            w += dx
+        if e & 4:
+            y += dy; h -= dy
+        if e & 8:
+            h += dy
+        if w < self.MIN_W:
+            if e & 1:
+                x -= self.MIN_W - w
+            w = self.MIN_W
+        if h < self.MIN_H:
+            if e & 4:
+                y -= self.MIN_H - h
+            h = self.MIN_H
+        self._expanded_h = h
+        self.setGeometry(x, y, w, h)
+
     def _remember_geometry(self):
         self.cfg["window"] = {"x": self.x(), "y": self.y(),
                               "w": self.width(), "h": self._expanded_h,
@@ -1765,14 +1951,16 @@ class FloatWindow(QWidget):
         secs = split_sections(text)
         ans = (secs.get("答案") or "").strip()
 
+        # 答案不再用独立 QLabel（公式图片会让它算不准高度、压到正文），改成同一个滚动区里的高亮块
+        self.answer_box.setVisible(False)
+        head = ""
         if ans:
             ans_html = rich_html(ans, t["text"], fontsize=15.0)
-            self.answer_box.setText(
-                f'<span style="color:{t["ans_tag"]}; font-size:8.5pt;">答 案</span>'
-                f'<br><span style="color:{t["text"]}; font-size:15.5pt; font-weight:700;">{ans_html}</span>')
-            self.answer_box.setVisible(True)
-        else:
-            self.answer_box.setVisible(False)
+            head = (f'<table width="100%" bgcolor="{t.get("ans_bg_solid", "#2c343d")}" '
+                    f'cellpadding="9" cellspacing="0" border="0"><tr><td>'
+                    f'<span style="color:{t["ans_tag"]}; font-size:8.5pt;">答 案</span><br>'
+                    f'<span style="color:{t["text"]}; font-size:15.5pt; font-weight:700;">{ans_html}</span>'
+                    f'</td></tr></table><div style="height:12px"></div>')
 
         if not secs:                             # 模型没按格式走：退回 markdown
             self.view.setHtml(rich_html(text, t["text"]))
@@ -1790,7 +1978,7 @@ class FloatWindow(QWidget):
                 f'{rich_html(body, t["text"])}</div>')
         self.view.setHtml(
             f'<div style="font-family:\'{t["font_body"]}\'; line-height:158%;">'
-            + "".join(blocks) + "</div>")
+            + head + "".join(blocks) + "</div>")
         self.view.verticalScrollBar().setValue(0)
 
     def _render_markdown(self, text):
